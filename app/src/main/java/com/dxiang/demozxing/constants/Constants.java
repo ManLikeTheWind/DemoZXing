@@ -1,4 +1,4 @@
-package com.dxiang.demozxing;
+package com.dxiang.demozxing.constants;
 
 /**
  * 作者：dongixang
@@ -7,7 +7,7 @@ package com.dxiang.demozxing;
  * 使用：
  */
 
-public class Constansts {
+public class Constants {
     public static final int ACTIVITY_REQUEST_CODE_IMG=1;
     public static final int ACTIVITY_REQUEST_CODE_IMG_CROPE=ACTIVITY_REQUEST_CODE_IMG+1;
 

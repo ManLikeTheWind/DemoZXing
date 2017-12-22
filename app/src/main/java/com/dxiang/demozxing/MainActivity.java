@@ -5,24 +5,19 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.UserHandle;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SwitchCompat;
 import android.view.View;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import com.dxiang.demozxing.constants.Constants;
 import com.dxiang.demozxing.runnable.RunnableCreateBarCode;
 import com.dxiang.demozxing.runnable.RunnableCreateQRCode;
 import com.dxiang.demozxing.runnable.ThreadPool;
-import com.dxiang.demozxing.utils.BitmapUtils;
 import com.dxiang.demozxing.utils.CreateCodeBitmapUtils;
 import com.dxiang.demozxing.utils.DisplayUtils;
 import com.dxiang.demozxing.utils.StringUtils;
@@ -40,13 +35,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what){
-                case Constansts.ERROR_CODE_GENERATE_DATA:
+                case Constants.ERROR_CODE_GENERATE_DATA:
                     ToastUtils.showToastCenterShort(R.string.generate_error_code_data,mContext.get());
                     break;
-                case Constansts.ERROR_CODE_GENERATE_DATA_NULL:
+                case Constants.ERROR_CODE_GENERATE_DATA_NULL:
                     ToastUtils.showToastCenterShort(R.string.generate_error_code_data_null,mContext.get());
                     break;
-                case Constansts.SUCCESS_CODE_GENERATE:
+                case Constants.SUCCESS_CODE_GENERATE:
                     if (msg.obj!=null){
                         iv_qr_image.setImageBitmap((Bitmap) msg.obj);
                     }else {
@@ -132,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 ////                intent.setAction(Intent.ACTION_PICK_ACTIVITY);
 //                intent.setType("image/*");
 //                intentWrapper=Intent.createChooser(intent,DisplayUtils.getString(mContext.get(),(R.string.chose_logo)));
-//                startActivityForResult(intentWrapper,Constansts.ACTIVITY_REQUEST_CODE_IMG);
+//                startActivityForResult(intentWrapper,Constants.ACTIVITY_REQUEST_CODE_IMG);
 
                 break;
             case R.id.bt_create_bar_code:
@@ -150,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void run() {
                         Bitmap bitmap= BitmapFactory.decodeResource(mContext.get().getResources(),R.mipmap.test_addlogo);
                         bitmap= CreateCodeBitmapUtils.addLogo(bitmap,bitmap);
-                        mHandler.sendMessage(mHandler.obtainMessage(Constansts.SUCCESS_CODE_GENERATE,bitmap));
+                        mHandler.sendMessage(mHandler.obtainMessage(Constants.SUCCESS_CODE_GENERATE,bitmap));
                     }
                 }.start();
                 break;
@@ -169,14 +164,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         Uri uri=null;
         switch (requestCode){
-            case Constansts.ACTIVITY_REQUEST_CODE_IMG:
+            case Constants.ACTIVITY_REQUEST_CODE_IMG:
                 if (data==null){
                     return;
                 }
                 uri=data.getData();
-                SystemViewUtils.gotoCropSystemView(uri,MainActivity.this,Constansts.ACTIVITY_REQUEST_CODE_IMG_CROPE);
+                SystemViewUtils.gotoCropSystemView(uri,MainActivity.this, Constants.ACTIVITY_REQUEST_CODE_IMG_CROPE);
                 break;
-            case Constansts.ACTIVITY_REQUEST_CODE_IMG_CROPE:
+            case Constants.ACTIVITY_REQUEST_CODE_IMG_CROPE:
                 if (data==null){
                     return;
                 }
