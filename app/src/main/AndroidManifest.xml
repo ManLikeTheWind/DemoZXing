@@ -2,7 +2,37 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.dxiang.demozxing">
 
+    <!-- 手机振动权限 -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- 相机权限 -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- shown on top of all other applications.   just 警告窗 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- 调动手机硬件 -->
+    <uses-feature android:name="android.hardware.camera" />
+    <!-- 相机能够自动聚焦 -->
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <!-- 闪光灯 -->
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+    <!--
+             获取 位置权限
+        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    -->
+    <!-- 读写权限，由于从相机取图片进行解码，所以在这里需要添加读写权限 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <supports-screens
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:resizeable="true"
+        android:smallScreens="true" />
+
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -16,6 +46,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activity.ScanQRCodeActivity"></activity>
     </application>
 
 </manifest>

@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">DemoZXing</string>
+    <string name="generate_error_code_data_null">字符不能为空</string>
+    <string name="generate_error_code_data">字符集错误</string>
+
+    <string name="dimension_content">自动扫描框内的二维码/条形码</string>
+    <string name="scanning_begin">开始扫描</string>
+    <string name="light_button">闪光灯</string>
+    <string name="photograph_album">相册选取</string>
+    <string name="cancel">取消</string>
+    <string name="data_not_null">数据不能为空</string>
+    <string name="chose_logo">选择logo</string>
+
 </resources>
