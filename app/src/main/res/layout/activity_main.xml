@@ -62,6 +62,11 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="保存图片"/>
+        <Button
+            android:id="@+id/bt_share_img"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="分享"/>
 
         <ImageView
             android:id="@+id/iv_qr_image"

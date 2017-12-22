@@ -154,6 +154,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }.start();
                 break;
+            case R.id.bt_share_img:
+
+//                SystemViewUtils.systemShare();
+                break;
         }
     }
 

@@ -227,7 +227,7 @@ public static Bitmap createQRImage(String content, int widthPix, int heightPix) 
                     if (bitMatrix.get(x, y)) {
                         pixels[y * width + x] = 0xff000000;//黑色
                     } else {
-//                        pixels[y * widthPix + x] = 0xffffffff;//白色
+                        pixels[y * widthPix + x] = 0xffffffff;//白色
                     }
                 }
             }

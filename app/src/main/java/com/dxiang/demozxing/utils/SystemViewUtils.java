@@ -26,12 +26,13 @@ public class SystemViewUtils {
         avtivity.startActivityForResult(intent, requestCodp);
     }
 
-    public static void systemShare(Uri imageFileUri){
+    public static void systemShare(Uri imageFileUri,Activity activity){
         Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND);
         shareIntent.putExtra(Intent.EXTRA_STREAM, imageFileUri);
         shareIntent.setType("image/*");
-//自定义提示语                startActivity(Intent.createChooser(shareIntent, "分享到"));
+//自定义提示语
+        activity.startActivity(Intent.createChooser(shareIntent, "分享到"));
     }
 
 }
