@@ -46,10 +46,10 @@ public class RunnableCreateQRCode implements Runnable {
             mHandler.sendMessage(mHandler.obtainMessage(Constants.ERROR_CODE_GENERATE_DATA_NULL));
             return;
         }
-        if (StringUtils.chineseSum(mData)!=0) {
-            mHandler.sendMessage(mHandler.obtainMessage(Constants.ERROR_CODE_GENERATE_DATA));
-            return;
-        }
+//        if (StringUtils.chineseSum(mData)!=0) {
+//            mHandler.sendMessage(mHandler.obtainMessage(Constants.ERROR_CODE_GENERATE_DATA));
+//            return;
+//        }
         if (mLogoBitmap !=null&&mIsRoundLogo){
             mLogoBitmap = BitmapUtils.getRoundCornerBitmap(mLogoBitmap, Constants.QRCODE_ROUND_RATE_360);
         }

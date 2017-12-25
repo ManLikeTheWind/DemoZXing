@@ -1,7 +1,10 @@
 package com.dxiang.demozxing.utils;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 
 /**
@@ -33,6 +36,35 @@ public class SystemViewUtils {
         shareIntent.setType("image/*");
 //自定义提示语
         activity.startActivity(Intent.createChooser(shareIntent, "分享到"));
+    }
+
+    /** 取得版本号*/
+    public static String getVersionName(Context context) {
+        try {
+            PackageInfo manager = context.getPackageManager().getPackageInfo(
+                    context.getPackageName(), 0);
+            return manager.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            return "Unknown";
+        }
+    }
+
+    /** 取得版本号*/
+    public static int getVersionCode(Context context) {
+        try {
+            PackageInfo manager = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0);
+            return manager.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            return -1;
+        }
+    }
+
+    public static String getPhoneDetails(){
+        return "Product Model: "
+                + android.os.Build.MODEL + ","//获取手机型号:HM NOTE 1S,
+                + android.os.Build.VERSION.SDK + ","//  SDK 版本号 : 19
+                + android.os.Build.VERSION.RELEASE;//获取版本号:4.4.4
     }
 
 }

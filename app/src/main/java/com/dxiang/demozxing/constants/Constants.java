@@ -10,6 +10,7 @@ package com.dxiang.demozxing.constants;
 public class Constants {
     public static final int ACTIVITY_REQUEST_CODE_IMG=1;
     public static final int ACTIVITY_REQUEST_CODE_IMG_CROPE=ACTIVITY_REQUEST_CODE_IMG+1;
+    public static final int ACTIVITY_REQUEST_CODE_SCANNING_CODE=ACTIVITY_REQUEST_CODE_IMG_CROPE+1;
 
     public static  final int ERROR_CODE_GENERATE_DATA =100;
     public static  final int ERROR_CODE_GENERATE_DATA_NULL =ERROR_CODE_GENERATE_DATA+1;

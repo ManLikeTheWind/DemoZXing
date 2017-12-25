@@ -14,6 +14,7 @@ import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import com.dxiang.demozxing.activity.ScanQRCodeActivity;
 import com.dxiang.demozxing.constants.Constants;
 import com.dxiang.demozxing.runnable.RunnableCreateBarCode;
 import com.dxiang.demozxing.runnable.RunnableCreateQRCode;
@@ -86,6 +87,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intentWrapper=null;
         switch (v.getId()){
             case R.id.bt_bigin_scan:
+                intent=new Intent();
+                intent.setClass(mContext.get(), ScanQRCodeActivity.class);
+                startActivityForResult(intent,Constants.ACTIVITY_REQUEST_CODE_SCANNING_CODE);
+//                overridePendingTransition();
                 break;
             case R.id.bt_goto_browser:
                 if (et_data.getText() == null) {
@@ -184,6 +189,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         logoBitmap,
                         true
                         ));
+                break;
+            case Constants.ACTIVITY_REQUEST_CODE_SCANNING_CODE:
+
+
+
                 break;
         }
     }
