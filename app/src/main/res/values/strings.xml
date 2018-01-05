@@ -2,6 +2,7 @@
     <string name="app_name">DemoZXing</string>
     <string name="generate_error_code_data_null">字符不能为空</string>
     <string name="generate_error_code_data">字符集错误</string>
+    <string name="generate_error_code_data_too_long">字符太长，条形码，仅限80字符以内</string>
 
     <string name="dimension_content">自动扫描框内的二维码/条形码</string>
     <string name="scanning_begin">开始扫描</string>

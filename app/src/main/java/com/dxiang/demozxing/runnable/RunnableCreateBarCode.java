@@ -22,7 +22,7 @@ public class RunnableCreateBarCode implements Runnable {
     private boolean mIsShowData;
     public <T extends CharSequence>RunnableCreateBarCode(Handler handler, T data,int widthPix,int heightPix,boolean isShowData) {
         this.mHandler = handler;
-        this.mData=data+"";
+        this.mData=(data+"").trim();
         this.mWidthPix =widthPix;
         this.mHeightPix =heightPix;
         this.mIsShowData =isShowData;
@@ -40,7 +40,11 @@ public class RunnableCreateBarCode implements Runnable {
             mHandler.sendMessage(mHandler.obtainMessage(Constants.ERROR_CODE_GENERATE_DATA));
             return;
         }
+        if (mData.length()>80){
+            mHandler.sendMessage(mHandler.obtainMessage(Constants.ERROR_CODE_GENERATE_DATA_DATA_LENGTH_TOO_LONG));
+        }
         Bitmap bitmap = CreateCodeBitmapUtils.creatBarcode(mData, mWidthPix, mHeightPix, mIsShowData);
-        mHandler.sendMessage(mHandler.obtainMessage(Constants.SUCCESS_CODE_GENERATE,bitmap));
+        int messageWhat = bitmap==null?Constants.GENERATE_CODE_FAILURE:Constants.GENERATE_CODE_SUCCESS;
+        mHandler.sendMessage(mHandler.obtainMessage(messageWhat,bitmap));
     }
 }

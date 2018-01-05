@@ -58,8 +58,8 @@ public class RunnableCreateQRCode implements Runnable {
             bitmap = CreateCodeBitmapUtils.createQRImage(mData,mWidthPix,mHeightPix);
         }else {
             bitmap = CreateCodeBitmapUtils.createQRImageLogo(mData,mWidthPix,mHeightPix, mLogoBitmap);
-
         }
-        mHandler.sendMessage(mHandler.obtainMessage(Constants.SUCCESS_CODE_GENERATE,bitmap));
+        int messageWhat = bitmap==null?Constants.GENERATE_CODE_FAILURE:Constants.GENERATE_CODE_SUCCESS;
+        mHandler.sendMessage(mHandler.obtainMessage(messageWhat,bitmap));
     }
 }

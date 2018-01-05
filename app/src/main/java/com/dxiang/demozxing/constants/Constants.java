@@ -19,10 +19,12 @@ public class Constants {
 
     public static  final int ERROR_CODE_GENERATE_DATA =100;
     public static  final int ERROR_CODE_GENERATE_DATA_NULL =ERROR_CODE_GENERATE_DATA+1;
-    public static  final int ERROR_CODE_PARSEGENERATE_IMG_NULL=ERROR_CODE_GENERATE_DATA_NULL+1;
+    public static  final int ERROR_CODE_GENERATE_DATA_DATA_LENGTH_TOO_LONG =ERROR_CODE_GENERATE_DATA_NULL+1;
+    public static  final int ERROR_CODE_PARSEGENERATE_IMG_NULL= ERROR_CODE_GENERATE_DATA_DATA_LENGTH_TOO_LONG +1;
 
-    public static  final int SUCCESS_CODE_GENERATE=200;
-    public static  final int PARSE_IMG_CODE_SUCCESS =SUCCESS_CODE_GENERATE+1;
+    public static  final int GENERATE_CODE_SUCCESS =200;
+    public static  final int GENERATE_CODE_FAILURE =GENERATE_CODE_SUCCESS +1;
+    public static  final int PARSE_IMG_CODE_SUCCESS = GENERATE_CODE_FAILURE +1;
     public static  final int PARSE_IMG_CODE_FAILE = PARSE_IMG_CODE_SUCCESS +1;
 
     public static final int  SAVE_BITMAP_SUCCESS= PARSE_IMG_CODE_FAILE +1;

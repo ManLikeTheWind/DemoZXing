@@ -1,7 +1,5 @@
 package com.dxiang.demozxing;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -22,7 +20,6 @@ import com.dxiang.demozxing.runnable.RunnableCreateBarCode;
 import com.dxiang.demozxing.runnable.RunnableCreateQRCode;
 import com.dxiang.demozxing.runnable.RunnableSaveImg;
 import com.dxiang.demozxing.runnable.ThreadPool;
-import com.dxiang.demozxing.utils.BitmapUtils;
 import com.dxiang.demozxing.utils.DisplayUtils;
 import com.dxiang.demozxing.utils.StringUtils;
 import com.dxiang.demozxing.utils.SystemViewUtils;
@@ -65,14 +62,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case Constants.ERROR_CODE_GENERATE_DATA_NULL:
                     ToastUtils.showToastCenterShort(R.string.generate_error_code_data_null,mContext.get());
                     break;
-                case Constants.SUCCESS_CODE_GENERATE:
-                    if (msg.obj!=null){
-                        mCodeBitmap=(Bitmap) msg.obj;
-                        mSaveBitmapState=SaveBitmapState.NOT_SAVE;
-                        iv_qr_image.setImageBitmap(mCodeBitmap);
-                    }else {
-                        iv_qr_image.setImageResource(R.mipmap.ic_launcher_round);
-                    }
+                case Constants.ERROR_CODE_GENERATE_DATA_DATA_LENGTH_TOO_LONG:
+                    ToastUtils.showToastCenterShort(R.string.generate_error_code_data_too_long,mContext.get());
+                    break;
+                case Constants.GENERATE_CODE_SUCCESS:
+                     mCodeBitmap=(Bitmap) msg.obj;
+                     mSaveBitmapState=SaveBitmapState.NOT_SAVE;
+                     iv_qr_image.setImageBitmap(mCodeBitmap);
+                    break;
+                case Constants.GENERATE_CODE_FAILURE:
+                      mSaveBitmapState=SaveBitmapState.NOT_SAVE;
+                      iv_qr_image.setImageResource(R.mipmap.ic_launcher_round);
+                    ToastUtils.showToastCenterShort(R.string.current_img_saveing_faile,MainActivity.this);
                     break;
                 case Constants.SAVE_BITMAP_FAILE:
                     mSaveBitmapState=SaveBitmapState.SAVE_FAILE;
@@ -139,15 +140,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (StringUtils.isNullorEmpty(et_data.getText())){
                     ToastUtils.showToastCenterShort((R.string.data_not_null),mContext.get());
                 }
-                Bitmap bitmap=BitmapFactory.decodeResource(getResources(),R.mipmap.test_addlogo);
-                ThreadPool.get().execute(new RunnableCreateQRCode(
-                        mHandler,
-                        et_data.getText(),
-                        DisplayUtils.getDimenPix(mContext.get(),R.dimen.qr_code_img_width),
-                        DisplayUtils.getDimenPix(mContext.get(),R.dimen.qr_code_img_height),
-                        bitmap,
-                        true
-                ));
+                SystemViewUtils.gotoPickImgFromAblum(this,Constants.ACTIVITY_REQUEST_CODE_IMG);
+//                Bitmap bitmap=BitmapFactory.decodeResource(getResources(),R.mipmap.test_addlogo);
+//                ThreadPool.get().execute(new RunnableCreateQRCode(
+//                        mHandler,
+//                        et_data.getText(),
+//                        DisplayUtils.getDimenPix(mContext.get(),R.dimen.qr_code_img_width),
+//                        DisplayUtils.getDimenPix(mContext.get(),R.dimen.qr_code_img_height),
+//                        bitmap,
+//                        true));
                 break;
             case R.id.bt_create_bar_code:
                 ThreadPool.get().execute(
@@ -204,6 +205,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode){
+            case Constants.ACTIVITY_REQUEST_CODE_IMG:
+                if (resultCode==RESULT_OK){
+                    Uri uri=data.getData();
+                    SystemViewUtils.gotoCropSystemView(uri,this,Constants.ACTIVITY_REQUEST_CODE_IMG_CROP_GENERATE_QR);
+                }
+                break;
             case Constants.ACTIVITY_REQUEST_CODE_IMG_CROP_GENERATE_QR:
                 if (resultCode!=RESULT_OK&&data==null){
                     return;
