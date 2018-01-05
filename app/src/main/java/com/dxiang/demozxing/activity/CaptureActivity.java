@@ -64,10 +64,10 @@ public class CaptureActivity extends AppCompatActivity implements
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what){
-                case Constants.SUCCESS_CODE_PARSE_IMG://扫描成功
+                case Constants.PARSE_IMG_CODE_SUCCESS://扫描成功
                     ViewUtilsM.setViewVisible(view_load,View.GONE);
                     break;
-                case Constants.FAILE_CODE_PARSE_IMG://扫描失败
+                case Constants.PARSE_IMG_CODE_FAILE://扫描失败
                     ViewUtilsM.setViewVisible(view_load,View.GONE);
                     ToastUtils.showToastCenterShort(R.string.parse_code_error, CaptureActivity.this);
                     break;

@@ -5,7 +5,6 @@ import android.os.Handler;
 
 import com.dxiang.demozxing.R;
 import com.dxiang.demozxing.constants.Constants;
-import com.dxiang.demozxing.utils.CreateCodeBitmapUtils;
 import com.dxiang.demozxing.utils.ParseCodeBitmapUtils;
 import com.dxiang.demozxing.utils.StringUtils;
 import com.google.zxing.Result;
@@ -34,9 +33,8 @@ public class RunnableParseImgCode implements Runnable {
             return;
         }
         Result result = ParseCodeBitmapUtils.parseBitmapImg(mBitmap);
-        String resultStr=result.getText();
-        if (StringUtils.isNullorEmpty(resultStr)){
-            mHandler.sendMessage(mHandler.obtainMessage(Constants.FAILE_CODE_PARSE_IMG));
+        if (result==null||StringUtils.isNullorEmpty(result.getText())){
+            mHandler.sendMessage(mHandler.obtainMessage(Constants.PARSE_IMG_CODE_FAILE));
         }else {
             mHandler.sendMessage(mHandler.obtainMessage(R.id.decode_succeeded,result));
         }

@@ -38,7 +38,7 @@ public class ParseCodeBitmapUtils {
             Result decode = multiFormatReader.decode(binaryBitmap, hints);
             return decode;
         }catch (Exception e){
-            Log.e("ParseCodeBitmapUtils", "parseBitmapImg: ",e );
+            Log.e("ParseCodeBitmapUtils", "parseBitmapImg: "+e.getMessage());
         }finally {
             if (bitmap!=null){
                 bitmap.recycle();
