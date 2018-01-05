@@ -21,7 +21,7 @@ import java.io.FileNotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.example.zxing_update.utils.CreateQRCode_Utils;
+import com.dxiang.demozxing.utils.BitmapUtils;
 import com.google.zxing.LuminanceSource;
 
 /**
@@ -33,8 +33,10 @@ import com.google.zxing.LuminanceSource;
 public final class RGBLuminanceSource extends LuminanceSource {
 	private final byte[] luminances;
 
+	public static final Long SCAN_DEFAULT_SIZE=(long)4000000;
+
 	public RGBLuminanceSource(String path) throws FileNotFoundException {
-		this(loadBitmap(path));
+		this(loadBitmap(path,true));
 	}
 
 	public RGBLuminanceSource(Bitmap bitmap) {
@@ -98,36 +100,25 @@ public final class RGBLuminanceSource extends LuminanceSource {
 		return luminances;
 	}
 
-	private static Bitmap loadBitmap(String path) throws FileNotFoundException {
-		Bitmap bitmap = BitmapFactory.decodeFile(path);
+	/**扫描选择相册图片,判断是否压缩的临界值
+	 *
+	 * 4000000,我发现的问题手机3000000就挂了,
+	 * 所以给了这个值具体的临界值我也不是很清楚,
+	 * 你可能会问为什么要给个临界值盘判断是否压缩,那是因为有些小图压缩了不能解析识别,
+	 * 所以我进行了判断,大图压缩解析,小图直接解析
+	 * */
+	private static Bitmap loadBitmap(String path, boolean isOkSize) throws FileNotFoundException {
+		Bitmap bitmap = null;
+		if (isOkSize) {  //小图,直接调用功能系统的解析返回
+			bitmap = BitmapFactory.decodeFile(path);
+		} else { //大图 先压缩在返回
+			bitmap = BitmapUtils.compress(path);
+		}
 		if (bitmap == null) {
 			throw new FileNotFoundException("Couldn't open " + path);
 		}
 		return bitmap;
 	}
-	
-	 /**扫描选择相册图片,判断是否压缩的临界值*/
-    public static final Long SCAN_DEFAULT_SIZE=(long)4000000; 
-    /**
-     * 4000000,我发现的问题手机3000000就挂了,
-     * 所以给了这个值具体的临界值我也不是很清楚,
-     * 你可能会问为什么要给个临界值盘判断是否压缩,那是因为有些小图压缩了不能解析识别,
-     * 所以我进行了判断,大图压缩解析,小图直接解析
-     * */
-	private static Bitmap loadBitmap(String path, boolean isOkSize) throws FileNotFoundException {
-        Bitmap bitmap = null;
-        if (isOkSize) {  //小图,直接调用功能系统的解析返回
-            bitmap = BitmapFactory.decodeFile(path);
-        } else { //大图 先压缩在返回
-            bitmap = CreateQRCode_Utils.compress(path);
-        }
-        //ZXing源码
-        if (bitmap == null) {
-            throw new FileNotFoundException("Couldn't open " + path);
-        }
-        return bitmap;
-    }
-	
 	
 }
 

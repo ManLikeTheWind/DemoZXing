@@ -47,7 +47,7 @@ public class RunnableCreateQRCode implements Runnable {
             return;
         }
 //        if (StringUtils.chineseSum(mData)!=0) {
-//            mHandler.sendMessage(mHandler.obtainMessage(Constants.ERROR_CODE_GENERATE_DATA));
+//            mSetResultHandler.sendMessage(mSetResultHandler.obtainMessage(Constants.ERROR_CODE_GENERATE_DATA));
 //            return;
 //        }
         if (mLogoBitmap !=null&&mIsRoundLogo){

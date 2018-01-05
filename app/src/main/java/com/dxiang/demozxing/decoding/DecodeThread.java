@@ -22,8 +22,10 @@ import java.util.concurrent.CountDownLatch;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
+import android.util.Log;
 
-import com.example.zxing_update.zxing.activity.CaptureActivity;
+import com.dxiang.demozxing.activity.CaptureActivity;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.ResultPointCallback;
@@ -32,55 +34,49 @@ import com.google.zxing.ResultPointCallback;
  * This thread does all the heavy lifting of decoding the images.
  *
  */
-final class DecodeThread extends Thread {
+public final class DecodeThread extends Thread {
+  public static  final  String SCAN_CODE_BITMAP ="SCAN_CODE_BITMAP";
+  private final CaptureActivity mCaptureActivity;
+  /** 设置解码的参数：边距，编码格式，最大宽高等*/
+  private final Hashtable<DecodeHintType,Object> mHints;
+  private Handler mHandler;
+  private final CountDownLatch mHandlerInitLatch;
 
-  public static final String BARCODE_BITMAP = "barcode_bitmap";
-  private final CaptureActivity activity;
-  private final Hashtable<DecodeHintType, Object> hints;
-  private Handler handler;
-  private final CountDownLatch handlerInitLatch;
-
-  DecodeThread(CaptureActivity activity,
-               Vector<BarcodeFormat> decodeFormats,
-               String characterSet,
-               ResultPointCallback resultPointCallback) {
-
-    this.activity = activity;
-    handlerInitLatch = new CountDownLatch(1);
-
-    hints = new Hashtable<DecodeHintType, Object>(3);
-
-    if (decodeFormats == null || decodeFormats.isEmpty()) {
-    	 decodeFormats = new Vector<BarcodeFormat>();
-    	 decodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
-    	 decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
-    	 decodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
+  public DecodeThread(CaptureActivity mCaptureActivity,
+                      Vector<BarcodeFormat> mDecodeFormats,
+                      String mCharacterSet,
+                      ResultPointCallback resultPointCallback) {
+    this.mCaptureActivity = mCaptureActivity;
+    this.mHandlerInitLatch=new CountDownLatch(1);
+    mHints=new Hashtable<DecodeHintType,Object>(3);
+    if (mDecodeFormats==null||mDecodeFormats.isEmpty()){
+      mDecodeFormats=new Vector<BarcodeFormat>();
+      mDecodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
+      mDecodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
+      mDecodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
     }
-    
-    hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
-
-    if (characterSet != null) {
-      hints.put(DecodeHintType.CHARACTER_SET, characterSet);
+    mHints.put(DecodeHintType.POSSIBLE_FORMATS,mDecodeFormats);
+    if (TextUtils.isEmpty(mCharacterSet)){
+      mCharacterSet="UTF-8";
     }
-
-    hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK, resultPointCallback);
+    mHints.put(DecodeHintType.CHARACTER_SET,mCharacterSet);
+    mHints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK,resultPointCallback);
   }
-
-  Handler getHandler() {
+  public  Handler getHandler(){
+    Log.e("Decodethre", "getHandler: ");
     try {
-      handlerInitLatch.await();
-    } catch (InterruptedException ie) {
-      // continue?
+      mHandlerInitLatch.await();
+    } catch (InterruptedException e) {
+      //continue
     }
-    return handler;
+    return mHandler;
   }
 
   @Override
   public void run() {
     Looper.prepare();
-    handler = new DecodeHandler(activity, hints);
-    handlerInitLatch.countDown();
+    mHandler=new DecodeHandler(mCaptureActivity,mHints);
+    mHandlerInitLatch.countDown();
     Looper.loop();
   }
-
 }

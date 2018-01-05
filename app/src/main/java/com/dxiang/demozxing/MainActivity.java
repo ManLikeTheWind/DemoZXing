@@ -14,22 +14,43 @@ import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.dxiang.demozxing.activity.ScanQRCodeActivity;
+import com.dxiang.demozxing.activity.CaptureActivity;
 import com.dxiang.demozxing.constants.Constants;
 import com.dxiang.demozxing.runnable.RunnableCreateBarCode;
 import com.dxiang.demozxing.runnable.RunnableCreateQRCode;
+import com.dxiang.demozxing.runnable.RunnableSaveImg;
 import com.dxiang.demozxing.runnable.ThreadPool;
-import com.dxiang.demozxing.utils.CreateCodeBitmapUtils;
+import com.dxiang.demozxing.utils.BitmapUtils;
 import com.dxiang.demozxing.utils.DisplayUtils;
 import com.dxiang.demozxing.utils.StringUtils;
 import com.dxiang.demozxing.utils.SystemViewUtils;
 import com.dxiang.demozxing.utils.ToastUtils;
 
+import java.io.File;
 import java.lang.ref.SoftReference;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private EditText et_data;
     private ImageView iv_qr_image;
+    private Bitmap  mCodeBitmap = null;
+    private String mCodeResultStr = null;
+    private SaveBitmapState mSaveBitmapState=SaveBitmapState.NOT_SAVE;
+    private enum SaveBitmapState{
+        NOT_SAVE(0,"NOT_SAVE"),SAVEING(1,"NOT_SAVE"),SAVE_FAILE(1,"NOT_SAVE"),SAVE_OK(2,"NOT_SAVE");
+        private int code;
+        private String value;
+        SaveBitmapState(int code, String value) {
+            this.code = code;
+            this.value = value;
+        }
+        public int getCode() {
+            return code;
+        }
+        public String getValue() {
+            return value;
+        }
+    }
+
     private SoftReference<Context> mContext=null;
 
     private Handler mHandler=new Handler(new Handler.Callback() {
@@ -44,11 +65,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
                 case Constants.SUCCESS_CODE_GENERATE:
                     if (msg.obj!=null){
-                        iv_qr_image.setImageBitmap((Bitmap) msg.obj);
+                        mCodeBitmap=(Bitmap) msg.obj;
+                        mSaveBitmapState=SaveBitmapState.NOT_SAVE;
+                        iv_qr_image.setImageBitmap(mCodeBitmap);
                     }else {
                         iv_qr_image.setImageResource(R.mipmap.ic_launcher_round);
                     }
                     break;
+                case Constants.SAVE_BITMAP_FAILE:
+                    mSaveBitmapState=SaveBitmapState.SAVE_FAILE;
+                    ToastUtils.showToastCenterShort(R.string.current_img_saveing_faile,MainActivity.this);
+                    break;
+                case Constants.SAVE_BITMAP_SUCCESS:
+                    mSaveBitmapState=SaveBitmapState.SAVE_OK;
+                    ToastUtils.showToastCenterShort(R.string.current_img_saveing_success,MainActivity.this);
+                    break;
+
             }
             return false;
         }
@@ -71,11 +103,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     private void initListener() {
         findViewById(R.id.bt_bigin_scan).setOnClickListener(this);
-        findViewById(R.id.bt_goto_browser).setOnClickListener(this);
         findViewById(R.id.bt_create_nologo_code).setOnClickListener(this);
         findViewById(R.id.bt_create_logo_code).setOnClickListener(this);
         findViewById(R.id.bt_create_bar_code).setOnClickListener(this);
+        findViewById(R.id.bt_goto_browser).setOnClickListener(this);
         findViewById(R.id.bt_save_img).setOnClickListener(this);
+        findViewById(R.id.bt_share_img).setOnClickListener(this);
     }
     private void initDate() {
 
@@ -83,28 +116,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        Intent intent=null;
-        Intent intentWrapper=null;
+        Intent intent;
         switch (v.getId()){
             case R.id.bt_bigin_scan:
                 intent=new Intent();
-                intent.setClass(mContext.get(), ScanQRCodeActivity.class);
+                intent.setClass(mContext.get(), CaptureActivity.class);
                 startActivityForResult(intent,Constants.ACTIVITY_REQUEST_CODE_SCANNING_CODE);
 //                overridePendingTransition();
-                break;
-            case R.id.bt_goto_browser:
-                if (et_data.getText() == null) {
-                    return;
-                }
-                String result = et_data.getText().toString();
-                // Intent intent = new Intent(ZxingFrame.this,CheckResult.class);
-                // intent.putExtra("result", result);
-                // startActivity(intent);
-                Intent i = new Intent();
-                i.setClassName("com.android.browser","com.android.browser.BrowserActivity");
-                i.setAction(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(result));
-                startActivity(i);
                 break;
             case R.id.bt_create_nologo_code:
                 ThreadPool.get().execute(new RunnableCreateQRCode(
@@ -127,13 +145,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         bitmap,
                         true
                 ));
-//                intent=new Intent();
-//                intent.setAction(Intent.ACTION_PICK);
-////                intent.setAction(Intent.ACTION_PICK_ACTIVITY);
-//                intent.setType("image/*");
-//                intentWrapper=Intent.createChooser(intent,DisplayUtils.getString(mContext.get(),(R.string.chose_logo)));
-//                startActivityForResult(intentWrapper,Constants.ACTIVITY_REQUEST_CODE_IMG);
-
                 break;
             case R.id.bt_create_bar_code:
                 ThreadPool.get().execute(
@@ -145,18 +156,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 true));
                 break;
             case R.id.bt_save_img:
-                new Thread(){
-                    @Override
-                    public void run() {
-                        Bitmap bitmap= BitmapFactory.decodeResource(mContext.get().getResources(),R.mipmap.test_addlogo);
-                        bitmap= CreateCodeBitmapUtils.addLogo(bitmap,bitmap);
-                        mHandler.sendMessage(mHandler.obtainMessage(Constants.SUCCESS_CODE_GENERATE,bitmap));
-                    }
-                }.start();
+                if (mCodeBitmap!=null
+                        &&mSaveBitmapState.getCode()!=SaveBitmapState.SAVEING.getCode()){
+                    mSaveBitmapState=SaveBitmapState.SAVEING;
+                    ThreadPool.get().execute(
+                            new RunnableSaveImg(
+                                 mHandler,
+                                    mCodeBitmap,
+                                 App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH));
+                }else {
+                    ToastUtils.showToastCenterShort(R.string.current_img_saving,MainActivity.this);
+                }
+                break;
+            case R.id.bt_goto_browser:
+                if (et_data.getText() == null) {
+                    return;
+                }
+                String result = et_data.getText().toString();
+                Intent i = new Intent();
+                i.setClassName("com.android.browser","com.android.browser.BrowserActivity");
+                i.setAction(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(result));
+                startActivity(i);
                 break;
             case R.id.bt_share_img:
-
-//                SystemViewUtils.systemShare();
+                if (mSaveBitmapState.getCode()==SaveBitmapState.SAVE_OK.getCode()){
+                    File file=new File(App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH);
+                    if (file.exists()){
+                        SystemViewUtils.gotoSystemShare(Uri.parse(App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH),MainActivity.this);
+                        return;
+                    }
+                }else if (mSaveBitmapState.getCode()==SaveBitmapState.NOT_SAVE.getCode()){
+                    ToastUtils.showToastCenterShort(R.string.current_img_not_save,MainActivity.this);
+                }else if (mSaveBitmapState.getCode()==SaveBitmapState.SAVEING.getCode()){
+                    ToastUtils.showToastCenterShort(R.string.current_img_saving,MainActivity.this);
+                }else if (mSaveBitmapState.getCode()==SaveBitmapState.SAVE_FAILE.getCode()){
+                    ToastUtils.showToastCenterShort(R.string.current_img_saveing_faile,MainActivity.this);
+                }
                 break;
         }
     }
@@ -164,20 +200,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode!=RESULT_OK){
-            return;
-        }
-        Uri uri=null;
         switch (requestCode){
-            case Constants.ACTIVITY_REQUEST_CODE_IMG:
-                if (data==null){
-                    return;
-                }
-                uri=data.getData();
-                SystemViewUtils.gotoCropSystemView(uri,MainActivity.this, Constants.ACTIVITY_REQUEST_CODE_IMG_CROPE);
-                break;
-            case Constants.ACTIVITY_REQUEST_CODE_IMG_CROPE:
-                if (data==null){
+            case Constants.ACTIVITY_REQUEST_CODE_IMG_CROP_GENERATE_QR:
+                if (resultCode!=RESULT_OK&&data==null){
                     return;
                 }
                 Bitmap logoBitmap = (Bitmap) data.getParcelableExtra("data");
@@ -191,9 +216,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         ));
                 break;
             case Constants.ACTIVITY_REQUEST_CODE_SCANNING_CODE:
-
-
-
+                if (resultCode!=RESULT_OK&&data==null){
+                    return;
+                }
+                 String  mCodeResultBitmapPath = data.getExtras().getString(Constants.ACTIVITY_RESULT_DATA_SCAN_CODE_BITMAP_PATH);
+                 mCodeBitmap = StringUtils.isNullorEmpty(mCodeResultBitmapPath)?null:BitmapFactory.decodeFile(mCodeResultBitmapPath);
+                 mCodeResultStr = data.getExtras().getString(Constants.ACTIVITY_RESULT_DATA_SCAN_CODE_STRING);
+                et_data.setText(mCodeResultStr);
+                if (mCodeBitmap!=null){
+                    iv_qr_image.setImageBitmap(mCodeBitmap);
+                }
                 break;
         }
     }

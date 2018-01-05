@@ -48,7 +48,7 @@
             android:textStyle="bold"/>
         
         <Button
-            android:id="@+id/openLight"
+            android:id="@+id/btn_openLight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"

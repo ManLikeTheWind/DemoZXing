@@ -29,33 +29,17 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
-import com.example.zxing_update.utils.Utils;
+import com.dxiang.demozxing.utils.DisplayUtils;
 
 /**
  * This object wraps the Camera service object and expects to be the only one
  * talking to it. The implementation encapsulates the steps needed to take
  * preview-sized images, which are used for both preview and decoding.
- * 
  */
 public final class CameraManager {
 
 	private static final String TAG = CameraManager.class.getSimpleName();
 
-//	这个是初始数据
-//	private static final int MIN_FRAME_WIDTH = 240;//此处是每个边的长度
-//	private static final int MIN_FRAME_HEIGHT = 240;//此处是每个边的长度
-//	private static final int MAX_FRAME_WIDTH = 480;//此处是每个边的长度
-//	private static final int MAX_FRAME_HEIGHT = 360;//此处是每个边的长度
-	
-//	异常测试数据
-//	private static final int MIN_FRAME_WIDTH = 1000;//此处是每个边的长度
-//	private static final int MIN_FRAME_HEIGHT = 1000;//此处是每个边的长度
-//	private static final int MAX_FRAME_WIDTH = 1200;//此处是每个边的长度
-//	private static final int MAX_FRAME_HEIGHT = 1200;//此处是每个边的长度
-	
-// 此处为经验值，单位为 pix，如果出现异常：java.lang.IllegalArgumentException: Crop rectangle does not fit within image data
-//	可以修改此处将 经验值 修改下
-	
 //	2016.08.18  将下面的值 修改成 dp
 	private static  int MIN_FRAME_WIDTH = 160;//此处是每个边的长度
 	private static  int MIN_FRAME_HEIGHT = 160;//此处是每个边的长度
@@ -176,9 +160,7 @@ public final class CameraManager {
 		}
 	}
 
-	/**
-	 * Closes the camera driver if still in use.
-	 */
+	/**Closes the camera driver if still in use.*/
 	public void closeDriver() {
 		if (camera != null) {
 			FlashlightManager.disableFlashlight();
@@ -187,9 +169,7 @@ public final class CameraManager {
 		}
 	}
 
-	/**
-	 * Asks the camera hardware to begin drawing preview frames to the screen.
-	 */
+	/**Asks the camera hardware to begin drawing preview frames to the screen.*/
 	public void startPreview() {
 		if (camera != null && !previewing) {
 			camera.startPreview();
@@ -197,9 +177,7 @@ public final class CameraManager {
 		}
 	}
 
-	/**
-	 * Tells the camera to stop drawing preview frames.
-	 */
+	/**Tells the camera to stop drawing preview frames.*/
 	public void stopPreview() {
 		if (camera != null && previewing) {
 			if (!useOneShotPreviewCallback) {
@@ -269,11 +247,11 @@ public final class CameraManager {
 		            return null;
 		        }
 //========下面是我添加上去的：  将dp 转成 px;  将px 转成dp 没意思
-			MIN_FRAME_WIDTH=Utils.dip2px(context, MIN_FRAME_WIDTH);
-			MIN_FRAME_HEIGHT=Utils.dip2px(context, MIN_FRAME_HEIGHT);
+			MIN_FRAME_WIDTH= DisplayUtils.dip2px(context, MIN_FRAME_WIDTH);
+			MIN_FRAME_HEIGHT=DisplayUtils.dip2px(context, MIN_FRAME_HEIGHT);
 			
-			MAX_FRAME_WIDTH=Utils.dip2px(context, MAX_FRAME_WIDTH);
-			MAX_FRAME_HEIGHT=Utils.dip2px(context, MAX_FRAME_HEIGHT);
+			MAX_FRAME_WIDTH=DisplayUtils.dip2px(context, MAX_FRAME_WIDTH);
+			MAX_FRAME_HEIGHT=DisplayUtils.dip2px(context, MAX_FRAME_HEIGHT);
 //========上面是我添加上去的 		 
 			
 			int width = screenResolution.x * 1;  // 这两处的比例，会影响相机  扫描距离，越小，距离越远。 为1 虽然占内存，但是不受距离影响
@@ -298,8 +276,8 @@ public final class CameraManager {
 			}
 //========上面是我添加上去的 		
 			
-			Log.e("width+height", "width="+width+";height="+height+";\n MIN_FRAME_WIDTH="+MIN_FRAME_WIDTH+";MIN_FRAME_HEIGHT="+MIN_FRAME_HEIGHT);
-			Log.e("MAX_FRAME_WIDTH+MAX_FRAME_WIDTH", "MAX_FRAME_WIDTH="+MAX_FRAME_WIDTH+";MAX_FRAME_HEIGHT="+MAX_FRAME_HEIGHT);
+			Log.e(TAG, "width="+width+";height="+height+";\n MIN_FRAME_WIDTH="+MIN_FRAME_WIDTH+";MIN_FRAME_HEIGHT="+MIN_FRAME_HEIGHT);
+			Log.e(TAG, "MAX_FRAME_WIDTH="+MAX_FRAME_WIDTH+";MAX_FRAME_HEIGHT="+MAX_FRAME_HEIGHT);
 			
 			int leftOffset = (screenResolution.x - width) / 2;//获得 两边的距离
 			int topOffset = (screenResolution.y - height) / 2;//获得上下距离

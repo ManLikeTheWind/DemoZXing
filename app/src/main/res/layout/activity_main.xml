@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="#009900">
+
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <Button
             android:id="@+id/bt_bigin_scan"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="@dimen/main_btn_margin_top_5"
             android:text="开始扫描" />
 
         <TextView
@@ -27,57 +27,57 @@
             android:id="@+id/et_data"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="Tel:18940904052"
             android:textColor="@android:color/black"
-            android:textSize="18sp"
-            android:text="Tel:18940904052"/>
-
-        <Button
-            android:id="@+id/bt_goto_browser"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="进入浏览器" />
+            android:textSize="18sp" />
 
         <Button
             android:id="@+id/bt_create_nologo_code"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="生成没有LOGO二维码" />
+            android:layout_marginTop="@dimen/main_btn_margin_top_5"
+            android:text="@string/main_generate_no_logo_qrcode" />
+
         <Button
             android:id="@+id/bt_create_logo_code"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="生成 LOGO二维码" />
+            android:layout_marginTop="@dimen/main_btn_margin_top_5"
+            android:text="@string/main_generate_logo_qrcode" />
+
         <Button
             android:id="@+id/bt_create_bar_code"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="生成条形码"/>
+            android:layout_marginTop="@dimen/main_btn_margin_top_5"
+            android:text="@string/main_generate_bar_code" />
+
         <Button
             android:id="@+id/bt_save_img"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="保存图片"/>
+            android:layout_marginTop="@dimen/main_btn_margin_top_5"
+            android:text="@string/main_save_img" />
+
+        <Button
+            android:id="@+id/bt_goto_browser"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/main_btn_margin_top_5"
+            android:text="@string/main_goto_browoser" />
+
         <Button
             android:id="@+id/bt_share_img"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="分享"/>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:text="@string/main_share" />
+
         <ImageView
             android:id="@+id/iv_qr_image"
-            android:padding="0dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"/>
-        </LinearLayout>
-
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/main_btn_margin_top_5"
+            android:padding="0dp" />
     </LinearLayout>
 </ScrollView>

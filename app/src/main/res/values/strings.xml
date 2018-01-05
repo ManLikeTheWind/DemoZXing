@@ -10,5 +10,22 @@
     <string name="cancel">取消</string>
     <string name="data_not_null">数据不能为空</string>
     <string name="chose_logo">选择logo</string>
+    <string name="please_waitting_dot3">请稍候...</string>
+
+    <string name="parse_code_error">解析错误</string>
+    <string name="chose_scan_img">选择要扫描的图片</string>
+
+    <string name="current_img_not_save">当前图片没有保存，请先手动保存图片</string>
+    <string name="current_img_saving">当前图片正在保存...</string>
+    <string name="current_img_saveing_faile">当前图片保存失败</string>
+    <string name="current_img_saveing_success">当前图片保存成功</string>
+    <string name="main_share">分享</string>
+    <string name="main_goto_browoser">进入浏览器</string>
+    <string name="main_save_img">保存图片</string>
+    <string name="main_generate_bar_code">生成条形码</string>
+    <string name="main_generate_logo_qrcode">生成LOGO二维码</string>
+    <string name="main_generate_no_logo_qrcode">生成没有LOGO二维码</string>
+    <string name="system_share_to">分享到</string>
+
 
 </resources>
