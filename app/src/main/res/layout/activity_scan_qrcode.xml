@@ -1,28 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    android:background="@android:color/black">
 
-    <!-- 这是  主页面 界面 -->
-
-    <SurfaceView
-        android:id="@+id/preview_view"
+    <FrameLayout
+        android:id="@+id/framelayout_scan"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center" />
+        android:layout_height="wrap_content">
+        <!--这个是摄像头界面-->
+        <SurfaceView
+            android:id="@+id/preview_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
 
-    <com.dxiang.demozxing.view.ViewfinderView
-        android:id="@+id/viewfinder_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <!--这个是灰色界面（里面有一个框框即扫描框）-->
+        <com.dxiang.demozxing.view.ViewfinderView
+            android:id="@+id/viewfinder_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </FrameLayout>
 
     <LinearLayout
+        android:id="@+id/linearlayout_functionMenu"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:orientation="horizontal"
         android:paddingBottom="15dp">
-
         <!-- 功能区 -->
         <Button
             android:id="@+id/btn_cancel_scan"

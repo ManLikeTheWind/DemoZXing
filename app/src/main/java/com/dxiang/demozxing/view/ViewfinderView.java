@@ -68,6 +68,8 @@ public final class ViewfinderView extends View {
 	private int laserColor_center; 
 	private int laserColor_right; 
 	private Context context;
+
+	private boolean isInitFramingRect=false;
 	// This constructor is used when the class is built from an XML resource.
 	public ViewfinderView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -103,7 +105,7 @@ public final class ViewfinderView extends View {
 	@Override
 	public void onDraw(Canvas canvas) {
 		// 中间的扫描框，你要修改扫描框的大小，去CameraManager里面修改
-		Rect frame = CameraManager.get().getFramingRect();
+		Rect frame = CameraManager.get().getFramingRect(isInitFramingRect);
 		if (frame == null) {
 			return;
 		}
@@ -127,7 +129,7 @@ public final class ViewfinderView extends View {
 			canvas.drawBitmap(resultBitmap, frame.left, frame.top, paint);
 		} else {
 // 二维码 美化功能  替换处
-//			//画扫描框边上的角，总共8个部分 
+ 			//画扫描框边上的角，总共8个部分
 
 //	二维码 美化功能 替换处
 			paint.setColor(rectCorner_color);
@@ -137,7 +139,7 @@ public final class ViewfinderView extends View {
 			canvas.drawRect(frame.right - 20, frame.top - 10, frame.right + 10, frame.top, paint);
 			canvas.drawRect(frame.right, frame.top - 10, frame.right + 10, frame.top + 20, paint);
 
-//			这个 美化下面四个角有错：下边  不能再上边的 上边 ，画不出来；  一定要遵循上面的原则
+//			这个 美化下面四个角有个易错点：下边  不能再上边的 上边 ，画不出来；  一定要遵循上面的原则
 			canvas.drawRect(frame.left - 10,frame.bottom, frame.left + 20,frame.bottom + 10, paint);
 			canvas.drawRect(frame.left - 10, frame.bottom - 20, frame.left,frame.bottom + 10 , paint);
 			canvas.drawRect(frame.right - 20,  frame.bottom, frame.right + 10, frame.bottom + 10, paint);
@@ -182,12 +184,13 @@ public final class ViewfinderView extends View {
 //			int middle = frame.height() / 2 + frame.top;
 //			canvas.drawRect(frame.left + 2, middle - 1, frame.right - 1,middle + 2, paint);
 
-			Collection<ResultPoint> currentPossible = possibleResultPoints;
+			Collection<ResultPoint> currentPossible =  new HashSet<ResultPoint>(possibleResultPoints);
 			Collection<ResultPoint> currentLast = lastPossibleResultPoints;
+//			start=============画点--画现在的点，
 			if (currentPossible.isEmpty()) {
 				lastPossibleResultPoints = null;
 			} else {
-				possibleResultPoints = new HashSet<ResultPoint>(5);
+				possibleResultPoints.clear();//possibleResultPoints = new HashSet<ResultPoint>(5);
 				lastPossibleResultPoints = currentPossible;
 				paint.setAlpha(OPAQUE);
 				paint.setColor(resultPointColor);//  设置扫描  亮点的颜色
@@ -196,6 +199,7 @@ public final class ViewfinderView extends View {
 							+ point.getY(), 6.0f, paint);
 				}
 			}
+//			=============画点--画上一次的点
 			if (currentLast != null) {
 				paint.setAlpha(OPAQUE / 2);
 				paint.setColor(resultPointColor);
@@ -204,13 +208,14 @@ public final class ViewfinderView extends View {
 							+ point.getY(), 3.0f, paint);
 				}
 			}
+//			end画点=============
 			//只刷新扫描框的内容，其他地方不刷新
 			postInvalidateDelayed(ANIMATION_DELAY, frame.left, frame.top,frame.right, frame.bottom);
 		}
 	}
 	public void setCornerRadii(GradientDrawable drawable, float r0, float r1, float r2, float r3) {
 		drawable.setCornerRadii(new float[] { r0, r0, r1, r1, r2, r2, r3, r3 });
-		}
+	}
 	public void drawViewfinder() {
 		resultBitmap = null;
 		invalidate();

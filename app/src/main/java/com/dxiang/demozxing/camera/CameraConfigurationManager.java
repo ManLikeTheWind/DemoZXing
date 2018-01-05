@@ -24,9 +24,11 @@ import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
+import com.dxiang.demozxing.utils.CameraUtilsM;
+
 import java.util.regex.Pattern;
 
-final class CameraConfigurationManager {
+public final class CameraConfigurationManager {
 
   private static final String TAG = CameraConfigurationManager.class.getSimpleName();
 
@@ -36,7 +38,7 @@ final class CameraConfigurationManager {
   private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
   private final Context context;
-  private Point screenResolution;
+  private Point screenViewResolution;
   private Point cameraResolution;
   private int previewFormat;
   private String previewFormatString;
@@ -45,39 +47,29 @@ final class CameraConfigurationManager {
     this.context = context;
   }
 
+  /**这句要在initFromCAmeraParameters之前执行,才生效*/
+  public  void initScreenViewResolution(int x,int y){
+    this.screenViewResolution=new Point(x,y);
+  }
+
   /**Reads, one time, values from the camera that are needed by the app.*/
   void initFromCameraParameters(Camera camera) {
     Camera.Parameters parameters = camera.getParameters();
     previewFormat = parameters.getPreviewFormat();
     previewFormatString = parameters.get("preview-format");
     Log.d(TAG, "Default preview format: " + previewFormat + '/' + previewFormatString);
-    WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-    Display display = manager.getDefaultDisplay();
-    screenResolution = new Point(display.getWidth(), display.getHeight());
-    Log.d(TAG, "Screen resolution: " + screenResolution);
-    
-//    http://www.2cto.com/kf/201507/420469.html  参照此博客修改
-//    修改 图像的拉伸和 扭曲的 修复；  而且扫描的效率也提高了；
-    Point screenResolutionForCamera = new Point();
-    screenResolutionForCamera.x = screenResolution.x;
-    screenResolutionForCamera.y = screenResolution.y;
-    // preview size is always something like 480*320, other 320*480
-    if (screenResolution.x < screenResolution.y) {//但是 只要是 有下浮 菜单栏的还是存在着压缩：比如魅族手机
-        screenResolutionForCamera.x = screenResolution.y;
-        screenResolutionForCamera.y = screenResolution.x;
-        //下面修改不行，依然是拉长，看样子只有上面的方法
-//        screenResolutionForCamera.x = screenResolution.y;
-//        screenResolutionForCamera.y = screenResolution.y;
+    if (screenViewResolution==null) {
+      WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+      Display display = manager.getDefaultDisplay();
+      screenViewResolution = new Point(display.getWidth(), display.getHeight());
     }
-//    cameraResolution = getCameraResolution(parameters, screenResolution);
-    
-    cameraResolution = getCameraResolution(parameters, screenResolutionForCamera);
-    if (screenResolution.x<screenResolution.y) {
-		screenResolutionForCamera.x=screenResolution.y;
-		screenResolutionForCamera.y=screenResolution.x;
-	}
-    
-    Log.d(TAG, "Camera resolution: " + screenResolution);
+    Log.e(TAG, "Screen 或者ViewFinderView的大小 resolution: " + screenViewResolution);
+    if (cameraResolution==null){
+//    修改 图像的拉伸和 扭曲的 修复；  而且扫描的效率也提高了；
+        Point screenViewResolutionForCameraT = CameraUtilsM.getTempScreenViewResolutionForCamera(screenViewResolution);
+        cameraResolution = CameraUtilsM.getCameraResolution(parameters, screenViewResolutionForCameraT);
+    }
+    Log.e(TAG, "Camera resolution: " + screenViewResolution);
   }
 
   /**
@@ -92,8 +84,7 @@ final class CameraConfigurationManager {
     parameters.setPreviewSize(cameraResolution.x, cameraResolution.y);
     setFlash(parameters);
     setZoom(parameters);
-    //setSharpness(parameters);
-    //modify here
+    //setSharpness(parameters);modify here
     camera.setDisplayOrientation(90);
     camera.setParameters(parameters);
   }
@@ -102,8 +93,8 @@ final class CameraConfigurationManager {
     return cameraResolution;
   }
 
-  Point getScreenResolution() {
-    return screenResolution;
+  Point getScreenViewResolution() {
+    return screenViewResolution;
   }
 
   int getPreviewFormat() {
@@ -114,90 +105,6 @@ final class CameraConfigurationManager {
     return previewFormatString;
   }
 
-  private static Point getCameraResolution(Camera.Parameters parameters, Point screenResolution) {
-
-    String previewSizeValueString = parameters.get("preview-size-values");
-    // saw this on Xperia
-    if (previewSizeValueString == null) {
-      previewSizeValueString = parameters.get("preview-size-value");
-    }
-
-    Point cameraResolution = null;
-
-    if (previewSizeValueString != null) {
-      Log.d(TAG, "preview-size-values parameter: " + previewSizeValueString);
-      cameraResolution = findBestPreviewSizeValue(previewSizeValueString, screenResolution);
-    }
-
-    if (cameraResolution == null) {
-      // Ensure that the camera resolution is a multiple of 8, as the screen may not be.
-      cameraResolution = new Point(
-          (screenResolution.x >> 3) << 3,
-          (screenResolution.y >> 3) << 3);
-    }
-
-    return cameraResolution;
-  }
-
-  private static Point findBestPreviewSizeValue(CharSequence previewSizeValueString, Point screenResolution) {
-    int bestX = 0;
-    int bestY = 0;
-    int diff = Integer.MAX_VALUE;
-    for (String previewSize : COMMA_PATTERN.split(previewSizeValueString)) {
-
-      previewSize = previewSize.trim();
-      int dimPosition = previewSize.indexOf('x');
-      if (dimPosition < 0) {
-        Log.w(TAG, "Bad preview-size: " + previewSize);
-        continue;
-      }
-
-      int newX;
-      int newY;
-      try {
-        newX = Integer.parseInt(previewSize.substring(0, dimPosition));
-        newY = Integer.parseInt(previewSize.substring(dimPosition + 1));
-      } catch (NumberFormatException nfe) {
-        Log.w(TAG, "Bad preview-size: " + previewSize);
-        continue;
-      }
-
-      int newDiff = Math.abs(newX - screenResolution.x) + Math.abs(newY - screenResolution.y);
-      if (newDiff == 0) {
-        bestX = newX;
-        bestY = newY;
-        break;
-      } else if (newDiff < diff) {
-        bestX = newX;
-        bestY = newY;
-        diff = newDiff;
-      }
-
-    }
-
-    if (bestX > 0 && bestY > 0) {
-      return new Point(bestX, bestY);
-    }
-    return null;
-  }
-
-  private static int findBestMotZoomValue(CharSequence stringValues, int tenDesiredZoom) {
-    int tenBestValue = 0;
-    for (String stringValue : COMMA_PATTERN.split(stringValues)) {
-      stringValue = stringValue.trim();
-      double value;
-      try {
-        value = Double.parseDouble(stringValue);
-      } catch (NumberFormatException nfe) {
-        return tenDesiredZoom;
-      }
-      int tenValue = (int) (10.0 * value);
-      if (Math.abs(tenDesiredZoom - value) < Math.abs(tenDesiredZoom - tenBestValue)) {
-        tenBestValue = tenValue;
-      }
-    }
-    return tenBestValue;
-  }
 
   private void setFlash(Camera.Parameters parameters) {
     // FIXME: This is a hack to turn the flash off on the Samsung Galaxy.
@@ -249,7 +156,7 @@ final class CameraConfigurationManager {
 
     String motZoomValuesString = parameters.get("mot-zoom-values");
     if (motZoomValuesString != null) {
-      tenDesiredZoom = findBestMotZoomValue(motZoomValuesString, tenDesiredZoom);
+      tenDesiredZoom = CameraUtilsM.findBestMotZoomValue(motZoomValuesString, tenDesiredZoom);
     }
 
     String motZoomStepString = parameters.get("mot-zoom-step");
@@ -278,8 +185,8 @@ final class CameraConfigurationManager {
     }
   }
 
-	public static int getDesiredSharpness() {
+  public static int getDesiredSharpness() {
 		return DESIRED_SHARPNESS;
-	}
+  }
 
 }

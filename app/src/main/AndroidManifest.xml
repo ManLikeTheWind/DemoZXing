@@ -48,7 +48,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.CaptureActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:screenOrientation="portrait"></activity>
             <!--android:theme="@style/Theme.AppCompat.Light.NoActionBar"-->
     </application>

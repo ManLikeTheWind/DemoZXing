@@ -16,6 +16,7 @@
 
 package com.dxiang.demozxing.decoding;
 
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -53,6 +54,7 @@ final class DecodeHandler extends Handler {
   public void handleMessage(Message msg) {
     switch (msg.what) {
       case R.id.decode:
+        /** data，相机的摄像头此时的分辨率==（width， height）{@link com.dxiang.demozxing.camera.PreviewCallback#onPreviewFrame(byte[], Camera)} */
         decode((byte[]) msg.obj, msg.arg1, msg.arg2);
         break;
       case R.id.quit:
@@ -61,6 +63,9 @@ final class DecodeHandler extends Handler {
     }
   }
 
+  /** data，相机的摄像头此时的分辨率( cameraResolution.x,cameraResolution.y)==（width， height）
+   * {@link com.dxiang.demozxing.camera.PreviewCallback#onPreviewFrame(byte[], Camera)}
+   */
   private void decode(byte[]data,int width,int height){
     long start= System.currentTimeMillis();
     Result rawResult=null;

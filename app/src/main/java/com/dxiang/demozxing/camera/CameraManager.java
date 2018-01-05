@@ -26,6 +26,7 @@ import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
@@ -99,6 +100,9 @@ public final class CameraManager {
 	 */
 	public static CameraManager get() {
 		return cameraManager;
+	}
+	public CameraConfigurationManager getCameraConfigurationManager() {
+		return configManager;
 	}
 
 	private CameraManager(Context context) {
@@ -236,12 +240,12 @@ public final class CameraManager {
 	 * 
 	 * @return The rectangle to draw on screen in window coordinates.
 	 */
-	public Rect getFramingRect() {
-		if (framingRect == null) {
+	public Rect getFramingRect(boolean isInitFramingRect) {
+		if (framingRect == null||isInitFramingRect) {
 			if (camera == null) {
 				return null;
 			}
-			Point screenResolution = configManager.getScreenResolution();
+			Point screenResolution = configManager.getScreenViewResolution();
 			 if (screenResolution == null) {
 		            // Called early, before init even finished
 		            return null;
@@ -303,14 +307,14 @@ public final class CameraManager {
 	 */
 	public Rect getFramingRectInPreview() {
 	if (framingRectInPreview == null) {
-			 Rect framingRect = getFramingRect();
+			 Rect framingRect = getFramingRect(false);
 		        if (framingRect == null) {
 		            return null;
 		        }
 			// 获取相机分辨率和屏幕分辨率
 			Rect rect = new Rect(framingRect);//150 516 930 1296
 			Point cameraResolution = configManager.getCameraResolution();//1280*720
-			Point screenResolution = configManager.getScreenResolution();//1080*1800
+			Point screenResolution = configManager.getScreenViewResolution();//1080*1800
 			// 根据相机分辨率和屏幕分辨率的比例对屏幕中央聚焦框进行调整
 			// modify here
 //			 rect.left = rect.left * cameraResolution.x / screenResolution.x;//182*720/1080

@@ -1,5 +1,7 @@
 package com.dxiang.demozxing;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -113,16 +115,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initDate() {
 
     }
-
     @Override
     public void onClick(View v) {
         Intent intent;
         switch (v.getId()){
             case R.id.bt_bigin_scan:
-                intent=new Intent();
-                intent.setClass(mContext.get(), CaptureActivity.class);
-                startActivityForResult(intent,Constants.ACTIVITY_REQUEST_CODE_SCANNING_CODE);
-//                overridePendingTransition();
+                    boolean mIsReturnScanSuccessBitmap=true;
+                    intent=new Intent();
+                    intent.setClass(mContext.get(), CaptureActivity.class);
+                    intent.putExtra(Constants.ACTIVITY_REQUEST_DATA_SCAN_IS_RETURN_IMG,mIsReturnScanSuccessBitmap);
+                    startActivityForResult(intent,Constants.ACTIVITY_REQUEST_CODE_SCANNING_CODE);
+    //              overridePendingTransition();
                 break;
             case R.id.bt_create_nologo_code:
                 ThreadPool.get().execute(new RunnableCreateQRCode(

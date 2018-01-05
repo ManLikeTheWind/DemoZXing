@@ -3,6 +3,8 @@ package com.dxiang.demozxing.activity;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -15,10 +17,14 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
 
 import com.dxiang.demozxing.App;
 import com.dxiang.demozxing.R;
 import com.dxiang.demozxing.camera.CameraManager;
+import com.dxiang.demozxing.camera.ObserverViewFinderViewState;
 import com.dxiang.demozxing.constants.Constants;
 import com.dxiang.demozxing.decoding.CaptureActivityHandler;
 import com.dxiang.demozxing.decoding.DecodeThread;
@@ -26,6 +32,7 @@ import com.dxiang.demozxing.decoding.InactivityTimer;
 import com.dxiang.demozxing.runnable.RunnableParseImgCode;
 import com.dxiang.demozxing.runnable.RunnableSaveImg;
 import com.dxiang.demozxing.runnable.ThreadPool;
+import com.dxiang.demozxing.utils.CameraUtilsM;
 import com.dxiang.demozxing.utils.SystemViewUtils;
 import com.dxiang.demozxing.utils.ToastUtils;
 import com.dxiang.demozxing.utils.ViewUtilsM;
@@ -34,6 +41,7 @@ import com.dxiang.demozxing.view.ViewfinderView;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 
+import java.util.Locale;
 import java.util.Vector;
 
 public class CaptureActivity extends AppCompatActivity implements
@@ -43,6 +51,8 @@ public class CaptureActivity extends AppCompatActivity implements
     public static  final  String TAG=CaptureActivity.class.getSimpleName();
     private CaptureActivityHandler mCaptureActivityHandler;
     private boolean mHasSurface;
+    /** 是否已经 重设对应相机宽高和ScanView的宽高:-1没有运行，0=执行中，1=执行成功*/
+    private ObserverViewFinderViewState mObserverFinderViewState=ObserverViewFinderViewState.STATE_PRE;
     private Vector<BarcodeFormat> mDecodeFormats;
     private String mCharacterSet;
     private InactivityTimer mInactivityTimer;
@@ -50,7 +60,10 @@ public class CaptureActivity extends AppCompatActivity implements
     private boolean mPlayBeep;
     private boolean mVibrate;
 
+    private FrameLayout mFrameLayoutScan;
     private ViewfinderView mViewFinderView;
+    private SurfaceView mSurfaceView;
+    private SurfaceHolder mSurfaceHolder;
 
     private String mResultDataStr=null;
     /** 是否返回扫描出来的Bitmap*/
@@ -92,6 +105,7 @@ public class CaptureActivity extends AppCompatActivity implements
                     break;
                 case Constants.SAVE_BITMAP_FAILE:
                     ToastUtils.showToastCenterShort(R.string.current_img_saveing_faile,CaptureActivity.this);
+                    SystemViewUtils.setResultBackCaptureActivity(CaptureActivity.this,RESULT_CANCELED,null,mResultDataStr);
                     CaptureActivity.this.finish();
                     break;
                 case Constants.SAVE_BITMAP_SUCCESS:
@@ -108,19 +122,31 @@ public class CaptureActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan_qrcode);
         CameraManager.init(getApplication());
+        initIntent();
         initView();
         initData();
         initListener();
     }
 
+    private void initIntent(){
+        Intent intent = getIntent();
+        if (intent!=null){
+            mIsResultBitmap=intent.getBooleanExtra(Constants.ACTIVITY_REQUEST_DATA_SCAN_IS_RETURN_IMG,false);
+        }
+    }
+
     private void initView() {
+        mFrameLayoutScan=(FrameLayout)findViewById(R.id.framelayout_scan);
         mViewFinderView= (ViewfinderView) findViewById(R.id.viewfinder_view);
         view_load=findViewById(R.id.view_load);
         ViewUtilsM.setViewVisible(view_load,View.GONE);
+        mSurfaceView= (SurfaceView) findViewById(R.id.preview_view);
+        mSurfaceHolder=mSurfaceView.getHolder();
         Log.e(TAG, "initView: view_load include == "+view_load );
     }
     private void initData() {
         mHasSurface=false;
+        mObserverFinderViewState=ObserverViewFinderViewState.STATE_PRE;
         mInactivityTimer=new InactivityTimer(this);
     }
 
@@ -128,7 +154,40 @@ public class CaptureActivity extends AppCompatActivity implements
         findViewById(R.id.btn_cancel_scan).setOnClickListener(this);
         findViewById(R.id.btn_openLight).setOnClickListener(this);
         findViewById(R.id.btn_pick_img_ablum).setOnClickListener(this);
+        mFrameLayoutScan.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int width = mFrameLayoutScan.getWidth();
+                int height = mFrameLayoutScan.getHeight();
+                Log.e(TAG, String.format(Locale.getDefault(),
+                                "addOnGlobalLayoutListener: mHasSurface = %s ;mObserverFinderViewState = %s ;(width,height) = (%s,%s) ",
+                                mHasSurface+"",mObserverFinderViewState+"",width+"",height+""));
+                if (mObserverFinderViewState.getCode()==ObserverViewFinderViewState.STATE_PRE.getCode()){
+                    Camera camera = Camera.open();
+                    Point pointView=new Point(width,height);
+                    Point screenViewResolutionForCameraT=CameraUtilsM.getTempScreenViewResolutionForCamera(pointView);
+                    Point pointCamera = CameraUtilsM.getCameraResolution(camera.getParameters(), screenViewResolutionForCameraT);
+                    camera.release();
+
+                    CameraUtilsM.findBestPointViewValue(pointView, pointCamera);
+
+                    ViewGroup.LayoutParams layoutParams = mFrameLayoutScan.getLayoutParams();
+                    layoutParams.height=pointView.y;
+                    mFrameLayoutScan.setLayoutParams(layoutParams);
+                    mObserverFinderViewState=ObserverViewFinderViewState.STATE_RUNNING;
+                    return;
+                }
+                if (mHasSurface&&mObserverFinderViewState.getCode()==ObserverViewFinderViewState.STATE_RUNNING.getCode()){
+                    mObserverFinderViewState=ObserverViewFinderViewState.STATE_FINISH;
+                    mFrameLayoutScan.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    CameraManager.get().getCameraConfigurationManager().initScreenViewResolution(width,height);
+                    initCamera(mSurfaceHolder);
+                }
+            }
+        });
+
     }
+
 
     private void initCamera(SurfaceHolder surfaceHolder){
         try{
@@ -183,13 +242,11 @@ public class CaptureActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        SurfaceView surfaceView= (SurfaceView) findViewById(R.id.preview_view);
-        SurfaceHolder surfaceHolder=surfaceView.getHolder();
-        if (mHasSurface){
-            initCamera(surfaceHolder);
+        if (mHasSurface&&mObserverFinderViewState.getCode()==ObserverViewFinderViewState.STATE_FINISH.getCode()){
+            initCamera(mSurfaceHolder);
         }else {
-            surfaceHolder.addCallback(this);
-            surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+            mSurfaceHolder.addCallback(this);
+            mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         }
         mDecodeFormats=null;
         mCharacterSet=null;
@@ -259,11 +316,11 @@ public class CaptureActivity extends AppCompatActivity implements
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.e(TAG, "surfaceCreated: ");
-        if (!mHasSurface){
-            mHasSurface=true;
+        Log.e(TAG, "surfaceCreated: mHasSurface = "+mHasSurface+";mObserverFinderViewState = "+mObserverFinderViewState);
+        if (!mHasSurface&&mObserverFinderViewState.getCode()==ObserverViewFinderViewState.STATE_FINISH.getCode()){
             initCamera(holder);
         }
+        mHasSurface=true;
     }
 
     @Override
