@@ -30,8 +30,6 @@ import com.dxiang.demozxing.utils.PermissionCheckUtils;
 import com.dxiang.demozxing.utils.StringUtils;
 import com.dxiang.demozxing.utils.SystemViewUtils;
 import com.dxiang.demozxing.utils.ToastUtils;
-import com.dxiang.demozxing.utils.WindowFloatDialogM;
-import com.tencent.bugly.crashreport.CrashReport;
 
 import java.io.File;
 import java.lang.ref.SoftReference;
