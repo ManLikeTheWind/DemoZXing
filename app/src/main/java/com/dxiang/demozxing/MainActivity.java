@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private SoftReference<Activity> mContext=null;
-    private WindowFloatDialogM mWindowFloatDialogM;
 
     private Handler mHandler=new Handler(new Handler.Callback() {
         @Override
@@ -125,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.bt_save_img).setOnClickListener(this);
         findViewById(R.id.bt_share_img).setOnClickListener(this);
 
-        findViewById(R.id.btn_show_window_dialog).setOnClickListener(this);
     }
     private void initDate() {
 
@@ -134,17 +132,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.btn_show_window_dialog:
-                if (mWindowFloatDialogM==null){
-                    mWindowFloatDialogM=new WindowFloatDialogM(MainActivity.this);
-                    mWindowFloatDialogM.showDialogFloat(new WindowFloatDialogM.IOnClickListener() {
-                        @Override
-                        public void onClick(WindowFloatDialogM dialog, WindowFloatDialogM.ClickWhichButton which) {
-
-                        }
-                    });
-                }
-                break;
             case R.id.bt_bigin_scan:
                 String[]permissions=new String[]{
                         Manifest.permission.CAMERA,
