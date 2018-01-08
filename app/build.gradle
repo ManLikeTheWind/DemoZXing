@@ -1,3 +1,5 @@
+import com.android.builder.model.ClassField
+
 apply plugin: 'com.android.application'
 
 android {
@@ -9,12 +11,152 @@ android {
         targetSdkVersion 25
         versionCode 3
         versionName "3.1.1"
+        multiDexEnabled true//生成多个dex文件---3-1
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk {
+            // 设置支持的SO库架构
+            //x86等需要有不建议，以为需要保持每个包路径都有so文件；有些手机内核不一样导致app崩溃；
+            //armeabi 是通用的；
+            abiFilters 'armeabi' //, 'x86', 'armeabi-v7a', 'x86_64', 'arm64-v8a'
+        }
     }
+//    allprojects {
+//       gradle.projectsEvaluated {//过时方法，检测
+//            tasks.withType(JavaCompile) {
+//                options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" }
+//             }
+//    }
     buildTypes {
-        release {
+        debug {
+            // 显示Log
+            buildConfigField "boolean", "LOG_DEBUG", "true"
+//            versionNameSuffix "-debug"
+            //Zipalign优化
+            zipAlignEnabled false
+            // 移除无用的resource文件
+            shrinkResources false
+            //混淆--
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            //前一部分代表系统默认的android程序的混淆文件，该文件已经包含了基本的混淆声明，后一个文件是自己的定义混淆文件
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'//默认不优化
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'//optimize 默认优化就是这两个文件的区别
+//            //签名
+//            signingConfig signingConfigs.release
+        }
+        release {
+            // 不显示Log
+            buildConfigField "boolean", "LOG_DEBUG", "false"
+            //Zipalign优化
+            zipAlignEnabled true
+            // 移除无用的resource文件
+            shrinkResources true
+            //混淆--
+            minifyEnabled true
+            //前一部分代表系统默认的android程序的混淆文件，该文件已经包含了基本的混淆声明，后一个文件是自己的定义混淆文件
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'//默认不优化
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'//optimize 默认优化就是这两个文件的区别
+//            //签名
+//            signingConfig signingConfigs.release
+        }
+    }
+
+    /** 设置生成的apk命名--3-01：appname_v1.02.37_productFlavors_debug_2017-10-26.apk*/
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def outputFile = output.outputFile
+            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                // 输出apk名称为appname_v1.02.37_productFlavors_debug_2017-10-26.apk
+//                def fileName = "DZX01_v${defaultConfig.versionName}_${variant.productFlavors[0].name}_release_${releaseTime()}.apk";
+                def fileName="DZX.apk";
+                if (variant.buildType.name.equals('release')) {
+                    if (variant.flavorName.equals('base01')) {
+                        fileName = "DZX_v${defaultConfig.versionName}_${getProductFlavors(variant)}_release_${releaseTime()}.apk";
+                    } else if (variant.flavorName.equals('base02')) {
+                        fileName = "DZX_v${defaultConfig.versionName}_${getProductFlavors(variant)}_release_${releaseTime()}.apk";
+                    }
+                } else if (variant.buildType.name.equals('debug')) {
+                    if (variant.flavorName.equals('base01')) {
+                        fileName = "DZX_v${defaultConfig.versionName}_${getProductFlavors(variant)}_debug_${releaseTime()}.apk";
+                    } else if (variant.flavorName.equals('base02')) {
+                        fileName = "DZX_v${defaultConfig.versionName}_${getProductFlavors(variant)}_debug_${releaseTime()}.apk";
+                    }
+                }
+                output.outputFile = new File(outputFile.parent, fileName)
+            }
+        }
+    }
+
+    //配置多版本的apk---4-02,
+    //配置多版本的apk---4-03:由于多个版本命名，所以这些key[product_flavors,app_name]被占用了，在其他地方不能再声明了：values文件里面应该删除掉
+    //配置多版本的apk---4-04:1).可以将差异化的资源：raw，mipmap，drawable，values等文件放到对应目录里面： 例如productFlavors-base02中的文件，
+    //                       2).但是资源文件命名不能和main里面的相同；
+    //                          2-1).values文件夹里面的资源文件，建议资源文件命名加上flavors的前缀，参考：base01_string.xml;
+    //                          2-2).mipmap里面的raw，asset里面的就不知道了，你可以尝试；
+    productFlavors {
+        base01 {//“base01”的用处，
+                // 1.gradle【apk打包命名-判断是哪个flavor(设置生成的apk命名)，获取当前flavor值(getProductFlavors())、本方法的resValue定义常量(productFlavors.base01.resValue)】、
+                // 2.常量值constants.ProductFlavors、
+                // 3.APP.getVersionNameByConfig()获取Flavor
+            applicationId "com.dxiang.demozxing01"
+            resValue("string", "product_flavors", "base01")//区分是哪个版本号
+//            resValue("string","app_name","DemoZXing02")
+//            manifestPlaceholders = [app_icon : "@mipmap/ic_launcher",splash_bg: "@style/StartAppTheme"]
+        }
+        base02 {
+            applicationId "com.dxiang.demozxing01"
+            //由于多个版本命名，所以这些key[product_flavors,app_name]被占用了，在其他地方不能再声明了：values文件里面应该删除掉
+            resValue("string", "product_flavors", "base02")//区分是哪个版本号:
+//            resValue("string","app_name","DemoZXing02")
+//            manifestPlaceholders = [app_icon : "@mipmap/ic_launcher",splash_bg: "@style/StartAppTheme"]
+        }
+    }
+
+    aaptOptions {
+        cruncherEnabled = false
+    }
+    lintOptions {
+        checkReleaseBuilds false
+        //执行lint检查，有任何的错误或者警告提示，都会终止构建，我们可以将其关掉
+        abortOnError false
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+}
+
+/**设置生成的apk命名--3-03*/
+def releaseTime() {//
+    return new Date().format("yyyy-MM-dd", TimeZone.getTimeZone("UTC"))
+}
+/**设置生成的apk命名--3-02：<br>获取多版本的 是哪个版本的名字*/
+def getProductFlavors(def variant) {
+    ClassField alreadyPresent = variant.mergedFlavor.resValues.get("product_flavors");//这个是获取R.string.product_flavors值
+    def flavorNameVar = variant.flavorName;
+    if (alreadyPresent != null) {
+//        String flavorName =  variant.mergedFlavor.name;//这个获取的是类名：base01或者base02.....；
+//        if (BuilderConstants.MAIN.equals(flavorName)) {
+//            logger.info(
+//                    "DefaultConfig: resValue '{}'",
+//                    variant.mergedFlavor.name, alreadyPresent.value);
+//        } else {
+//            logger.info(
+//                    "ProductFlavor({}): resValue '{}'",
+//                    flavorName, variant.mergedFlavor.name, alreadyPresent.value, " 11111 ");
+//        }
+        flavorNameVar = alreadyPresent.value;
+    }
+    return flavorNameVar;
+}
+
+afterEvaluate {//生成多个dex文件---3-2
+    tasks.matching {
+        it.name.startsWith('dex')
+    }.each { dx ->
+        if (dx.additionalParameters == null) {
+            dx.additionalParameters = ['--multi-dex']
+        } else {
+            dx.additionalParameters += '--multi-dex'
         }
     }
 }
@@ -27,4 +169,12 @@ dependencies {
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
+
+    /**生成多个dex文件---3-3*/
+    compile 'com.android.support:multidex:1.0.0'
+
+    /**其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号，例如2.1.9*/
+    compile 'com.tencent.bugly:crashreport:latest.release'
+    /**其中latest.release指代最新Bugly NDK版本号，也可以指定明确的版本号，例如3.0*/
+    compile 'com.tencent.bugly:nativecrashreport:latest.release'
 }

@@ -1,6 +1,7 @@
 package com.dxiang.demozxing.utils;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.view.Gravity;
 import android.widget.Toast;
 
@@ -18,5 +19,9 @@ public class ToastUtils {
         toast.setGravity(Gravity.CENTER,0,0);
         toast.show();
     }
-
+    public static void showToastCenterShort(String data, Context context){
+        Toast toast=Toast.makeText(context,data,Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER,0,0);
+        toast.show();
+    }
 }

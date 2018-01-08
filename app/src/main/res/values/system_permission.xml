@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="permission_unobtain_x" >未获得权限%1$d个:%2$s</string>
+    <string name="permission_int_res_unknow">未知权限</string>
+    <string name="permission_int_res_storage_read">存储读取</string>
+    <string name="permission_int_res_storage_write">存储写入</string>
+    <string name="permission_int_res_camera">相机</string>
+
+</resources>

@@ -1,34 +1,45 @@
 package com.dxiang.demozxing;
 
-import android.content.Context;
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.dxiang.demozxing.activity.CaptureActivity;
 import com.dxiang.demozxing.constants.Constants;
 import com.dxiang.demozxing.runnable.RunnableCreateBarCode;
 import com.dxiang.demozxing.runnable.RunnableCreateQRCode;
 import com.dxiang.demozxing.runnable.RunnableSaveImg;
 import com.dxiang.demozxing.runnable.ThreadPool;
 import com.dxiang.demozxing.utils.DisplayUtils;
+import com.dxiang.demozxing.utils.PermissionCheckUtils;
 import com.dxiang.demozxing.utils.StringUtils;
 import com.dxiang.demozxing.utils.SystemViewUtils;
 import com.dxiang.demozxing.utils.ToastUtils;
+import com.dxiang.demozxing.utils.WindowFloatDialogM;
+import com.tencent.bugly.crashreport.CrashReport;
 
 import java.io.File;
 import java.lang.ref.SoftReference;
+import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,
+        ActivityCompat.OnRequestPermissionsResultCallback {
+    public static String TAG=MainActivity.class.getSimpleName();
     private EditText et_data;
     private ImageView iv_qr_image;
     private Bitmap  mCodeBitmap = null;
@@ -50,7 +61,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private SoftReference<Context> mContext=null;
+    private SoftReference<Activity> mContext=null;
+    private WindowFloatDialogM mWindowFloatDialogM;
 
     private Handler mHandler=new Handler(new Handler.Callback() {
         @Override
@@ -94,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getWindow().addFlags(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mContext=new SoftReference<Context>(this);
+        mContext=new SoftReference<Activity>(this);
         initView();
         initListener();
         initDate();
@@ -112,21 +124,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.bt_goto_browser).setOnClickListener(this);
         findViewById(R.id.bt_save_img).setOnClickListener(this);
         findViewById(R.id.bt_share_img).setOnClickListener(this);
+
+        findViewById(R.id.btn_show_window_dialog).setOnClickListener(this);
     }
     private void initDate() {
 
     }
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onClick(View v) {
-        Intent intent;
         switch (v.getId()){
+            case R.id.btn_show_window_dialog:
+                if (mWindowFloatDialogM==null){
+                    mWindowFloatDialogM=new WindowFloatDialogM(MainActivity.this);
+                    mWindowFloatDialogM.showDialogFloat(new WindowFloatDialogM.IOnClickListener() {
+                        @Override
+                        public void onClick(WindowFloatDialogM dialog, WindowFloatDialogM.ClickWhichButton which) {
+
+                        }
+                    });
+                }
+                break;
             case R.id.bt_bigin_scan:
-                    boolean mIsReturnScanSuccessBitmap=true;
-                    intent=new Intent();
-                    intent.setClass(mContext.get(), CaptureActivity.class);
-                    intent.putExtra(Constants.ACTIVITY_REQUEST_DATA_SCAN_IS_RETURN_IMG,mIsReturnScanSuccessBitmap);
-                    startActivityForResult(intent,Constants.ACTIVITY_REQUEST_CODE_SCANNING_CODE);
-    //              overridePendingTransition();
+                String[]permissions=new String[]{
+                        Manifest.permission.CAMERA,
+//                        Manifest.permission.SYSTEM_ALERT_WINDOW,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE};
+                String[] needRequestPermissonArr = PermissionCheckUtils.checkPermissonSingles(mContext.get(),permissions);
+//                        Manifest.permission_group.CAMERA,
+//                        Manifest.permission.SYSTEM_ALERT_WINDOW,
+//                        Manifest.permission_group.STORAGE);
+                Log.e(TAG, "onRequestPermissionsResult:permissions = "+ Arrays.toString(needRequestPermissonArr) );
+//                needRequestPermissonArr=permission;
+                if (needRequestPermissonArr.length<1){
+                    SystemViewUtils.gotoScanCodeForRessult(mContext.get(),Constants.ACTIVITY_REQUEST_CODE_SCANNING_CODE);
+                }else {
+                    ActivityCompat.requestPermissions(mContext.get(),needRequestPermissonArr,Constants.ACTIVITY_PERMISSION_REQUEST_COMMON);
+                }
                 break;
             case R.id.bt_create_nologo_code:
                 ThreadPool.get().execute(new RunnableCreateQRCode(
@@ -141,14 +176,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     ToastUtils.showToastCenterShort((R.string.data_not_null),mContext.get());
                 }
                 SystemViewUtils.gotoPickImgFromAblum(this,Constants.ACTIVITY_REQUEST_CODE_IMG);
-//                Bitmap bitmap=BitmapFactory.decodeResource(getResources(),R.mipmap.test_addlogo);
-//                ThreadPool.get().execute(new RunnableCreateQRCode(
-//                        mHandler,
-//                        et_data.getText(),
-//                        DisplayUtils.getDimenPix(mContext.get(),R.dimen.qr_code_img_width),
-//                        DisplayUtils.getDimenPix(mContext.get(),R.dimen.qr_code_img_height),
-//                        bitmap,
-//                        true));
                 break;
             case R.id.bt_create_bar_code:
                 ThreadPool.get().execute(
@@ -240,4 +267,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){//0-g;-1=no
+            case Constants.ACTIVITY_PERMISSION_REQUEST_COMMON:
+                Log.e(TAG, "onRequestPermissionsResult:requestCode = "+requestCode+"; permissions = "+ Arrays.toString(permissions) +";grantResults = "+Arrays.toString(grantResults) );
+                String[] resultFalse = PermissionCheckUtils.checkPermissionResultFalse(permissions, grantResults);
+                if (resultFalse.length<1){
+                    SystemViewUtils.gotoScanCodeForRessult(mContext.get(),Constants.ACTIVITY_REQUEST_CODE_SCANNING_CODE);
+                }else {
+                    StringBuffer sb=new StringBuffer();
+                    sb.append(" ");
+                    for (int i=0;i<resultFalse.length;i++){
+                        sb.append(getString(PermissionCheckUtils.permissionManifest2IntRes(resultFalse[i]))+" ");
+                    }
+                    ToastUtils.showToastCenterShort(getString(R.string.permission_unobtain_x,resultFalse.length,sb.toString()),mContext.get());
+                }
+                break;
+        }
+
+
+
+
+
+    }
 }

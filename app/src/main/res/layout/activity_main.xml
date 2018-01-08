@@ -71,6 +71,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/main_share" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btn_show_window_dialog"
+                android:text="ShowWindoDialog"/>
+        </LinearLayout>
 
         <ImageView
             android:id="@+id/iv_qr_image"

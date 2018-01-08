@@ -11,6 +11,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresPermission;
+import android.support.v4.content.PermissionChecker;
 
 import com.dxiang.demozxing.App;
 import com.dxiang.demozxing.R;
@@ -26,7 +28,10 @@ import com.dxiang.demozxing.constants.Constants;
 
 public class SystemViewUtils {
 
-    public static void gotoCropSystemView(Uri inputRri,Activity avtivity,int requestCodp) {
+    private static Activity activity;
+    private static int requestCode;
+
+    public static void gotoCropSystemView(Uri inputRri, Activity avtivity, int requestCodp) {
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(inputRri, "image/*");
         intent.putExtra("crop", "true");
@@ -99,7 +104,8 @@ public class SystemViewUtils {
     }
 
 
-    public static  void setResultBackCaptureActivity(Activity activity, int resultCode, String codePath,String codeStr){
+    /**设置好参数后，将当前的Activity进行关掉*/
+    public static  void setResultBackCaptureActivityAndFinishThisA(Activity activity, int resultCode, String codePath, String codeStr){
         Intent resultIntent = new Intent();
         Bundle bundle=new Bundle();
         bundle.putString(Constants.ACTIVITY_RESULT_DATA_SCAN_CODE_BITMAP_PATH, codePath);////二维码扫描图片；-- bitmap在SetResult的finish 返回不过去；需要临时保存
@@ -110,33 +116,13 @@ public class SystemViewUtils {
     }
 
 
-    /** 取得版本号*/
-    public static String getVersionName(Context context) {
-        try {
-            PackageInfo manager = context.getPackageManager().getPackageInfo(
-                    context.getPackageName(), 0);
-            return manager.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            return "Unknown";
-        }
-    }
-
-    /** 取得版本号*/
-    public static int getVersionCode(Context context) {
-        try {
-            PackageInfo manager = context.getPackageManager()
-                    .getPackageInfo(context.getPackageName(), 0);
-            return manager.versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            return -1;
-        }
-    }
-
-    public static String getPhoneDetails(){
-        return "Product Model: "
-                + android.os.Build.MODEL + ","//获取手机型号:HM NOTE 1S,
-                + android.os.Build.VERSION.SDK + ","//  SDK 版本号 : 19
-                + android.os.Build.VERSION.RELEASE;//获取版本号:4.4.4
+    public static void gotoScanCodeForRessult(@RequiresPermission Activity activity, int requestCode){
+        boolean mIsReturnScanSuccessBitmap=true;
+        Intent intent=new Intent();
+        intent.setClass(activity, CaptureActivity.class);
+        intent.putExtra(Constants.ACTIVITY_REQUEST_DATA_SCAN_IS_RETURN_IMG,mIsReturnScanSuccessBitmap);
+        activity.startActivityForResult(intent,requestCode);
+        //overridePendingTransition();
     }
 
 }

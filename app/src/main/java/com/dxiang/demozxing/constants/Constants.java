@@ -43,8 +43,10 @@ public class Constants {
     public static final long VIBRATE_DURATION = 200L;
 
     public static final String ACTIVITY_RESULT_DATA_SCAN_CODE_BITMAP_PATH= "ACTIVITY_RESULT_DATA_SCAN_CODE_BITMAP_PATH";
-    public static final String ACTIVITY_RESULT_DATA_SCAN_CODE_STRING= "SCAN_CODE_STRING";
+    public static final String ACTIVITY_RESULT_DATA_SCAN_CODE_STRING= "data";
     public static final String ACTIVITY_REQUEST_DATA_SCAN_IS_RETURN_IMG="ACTIVITY_REQUEST_DATA_SCAN_IS_RETURN_IMG";
+
+    public static final int ACTIVITY_PERMISSION_REQUEST_COMMON=500;
 
 
 }

@@ -91,7 +91,7 @@ public class CaptureActivity extends AppCompatActivity implements
                     mResultDataStr = result.getText();
                     if (mResultDataStr.equals("")) {
                        ToastUtils.showToastCenterShort(R.string.parse_code_error,CaptureActivity.this);
-                        SystemViewUtils.setResultBackCaptureActivity(CaptureActivity.this,RESULT_CANCELED,null,null);
+                        SystemViewUtils.setResultBackCaptureActivityAndFinishThisA(CaptureActivity.this,RESULT_CANCELED,null,null);
                     } else {
                         Bundle bundle=msg.getData();
                         Bitmap bitmap=bundle.getParcelable(DecodeThread.SCAN_CODE_BITMAP);
@@ -99,18 +99,18 @@ public class CaptureActivity extends AppCompatActivity implements
                             ToastUtils.showToastCenterShort(R.string.current_img_saving,CaptureActivity.this);
                             ThreadPool.get().execute(new RunnableSaveImg(mSetResultHandler,bitmap,App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH));
                         }else {
-                            SystemViewUtils.setResultBackCaptureActivity(CaptureActivity.this,RESULT_OK,null,mResultDataStr);
+                            SystemViewUtils.setResultBackCaptureActivityAndFinishThisA(CaptureActivity.this,RESULT_OK,null,mResultDataStr);
                         }
                     }
                     break;
                 case Constants.SAVE_BITMAP_FAILE:
                     ToastUtils.showToastCenterShort(R.string.current_img_saveing_faile,CaptureActivity.this);
-                    SystemViewUtils.setResultBackCaptureActivity(CaptureActivity.this,RESULT_CANCELED,null,mResultDataStr);
+                    SystemViewUtils.setResultBackCaptureActivityAndFinishThisA(CaptureActivity.this,RESULT_CANCELED,null,mResultDataStr);
                     CaptureActivity.this.finish();
                     break;
                 case Constants.SAVE_BITMAP_SUCCESS:
                     ToastUtils.showToastCenterShort(R.string.current_img_saveing_success,CaptureActivity.this);
-                    SystemViewUtils.setResultBackCaptureActivity(CaptureActivity.this,RESULT_OK,App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH,mResultDataStr);
+                    SystemViewUtils.setResultBackCaptureActivityAndFinishThisA(CaptureActivity.this,RESULT_OK,App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH,mResultDataStr);
                     break;
             }
             return false;

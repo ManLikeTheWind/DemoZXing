@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--1.base01包下不使用strings.xml 名是因为会出现文件重复，
+        2.默认的main文件夹里存在的文件,在其他适配目录中不允许出现相同文件名的文件；
+                   2.1因为：【这个文件在编写成apk的时候会与main合并，资源文件里面内容进行替换】
+                   2.2但是在gradle里面进行声明的，就不能再合并了，所以在main里面的res里面的命名就不能有了；
+                   2.3测试：将gradle{android{productFlavors{resValue("string","app_name","DemoZXing01")}}}的resValues注释去掉，进行编译就会报错
+        3.如果差异化特别大可以将文件抽取出来单独放到各个差异包下， main文件下不创建差异文件
+        4.base01图标显示：当前BuildVariants 编译的是哪个flavor，哪个Flavor的文件就有和main的文件标志：水桶，点等-->
+<string name="app_name">DemoZXing01</string>
+</resources>
