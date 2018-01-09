@@ -26,7 +26,6 @@ public class ThreadPool {
             lock.lock();
             if (pool==null){
                 pool=new ThreadPool();
-                return executor;
             }
             lock.unlock();
         }
