@@ -24,6 +24,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import com.dxiang.demozxing.R;
@@ -39,6 +40,7 @@ import java.util.HashSet;
  * animation and result points.
  */
 public final class ViewfinderView extends View {
+	public static  final String TAG=ViewfinderView.class.getSimpleName();
 
 	private static final int[] SCANNER_ALPHA = { 0, 64, 128, 192, 255, 192,
 			128, 64 };
@@ -183,8 +185,13 @@ public final class ViewfinderView extends View {
 //			scannerAlpha = (scannerAlpha + 1) % SCANNER_ALPHA.length;
 //			int middle = frame.height() / 2 + frame.top;
 //			canvas.drawRect(frame.left + 2, middle - 1, frame.right - 1,middle + 2, paint);
-
-			Collection<ResultPoint> currentPossible =  new HashSet<ResultPoint>(possibleResultPoints);
+			Collection<ResultPoint> currentPossible=null;
+			try {
+				currentPossible =  new HashSet<ResultPoint>(possibleResultPoints);
+			}catch (Exception e){//java.util.ConcurrentModificationException  会抛出异常
+				Log.e(TAG, "onDraw: "+ e.getMessage());
+				currentPossible=new HashSet<>();
+			}
 			Collection<ResultPoint> currentLast = lastPossibleResultPoints;
 //			start=============画点--画现在的点，
 			if (currentPossible.isEmpty()) {
