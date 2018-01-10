@@ -120,7 +120,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.bt_create_bar_code).setOnClickListener(this);
         findViewById(R.id.bt_goto_browser).setOnClickListener(this);
         findViewById(R.id.bt_save_img).setOnClickListener(this);
-        findViewById(R.id.bt_share_img).setOnClickListener(this);
+
+        findViewById(R.id.bt_share_text).setOnClickListener(this);
+        findViewById(R.id.bt_share_img_single).setOnClickListener(this);
+        findViewById(R.id.bt_share_img_multis).setOnClickListener(this);
+        findViewById(R.id.bt_share_file_single).setOnClickListener(this);
+        findViewById(R.id.bt_share_file_multis).setOnClickListener(this);
 
     }
     private void initDate() {
@@ -189,19 +194,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 String result = et_data.getText().toString();
-                Intent i = new Intent();
-                i.setClassName("com.android.browser","com.android.browser.BrowserActivity");
-                i.setAction(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(result));
-                startActivity(i);
+                SystemViewUtils.gotoSystemBrowser(Uri.parse(result),mContext.get(),-1);
                 break;
-            case R.id.bt_share_img:
+
+            case R.id.bt_share_text:
+                SystemViewUtils.gotoSystemShare(mContext.get(),SystemViewUtils.GOTO_SHARE_TYPE_TEXT,et_data.getText().toString());
+                break;
+            case R.id.bt_share_img_single:
                 if (mSaveBitmapState.getCode()==SaveBitmapState.SAVE_OK.getCode()){
-                    File file=new File(App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH);
-                    if (file.exists()){
-                        SystemViewUtils.gotoSystemShare(Uri.parse(App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH),MainActivity.this);
-                        return;
-                    }
+                    SystemViewUtils.gotoSystemShare(MainActivity.this,SystemViewUtils.GOTO_SHARE_TYPE_IMG_SINGLE,App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH);
                 }else if (mSaveBitmapState.getCode()==SaveBitmapState.NOT_SAVE.getCode()){
                     ToastUtils.showToastCenterShort(R.string.current_img_not_save,MainActivity.this);
                 }else if (mSaveBitmapState.getCode()==SaveBitmapState.SAVEING.getCode()){
@@ -209,6 +210,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }else if (mSaveBitmapState.getCode()==SaveBitmapState.SAVE_FAILE.getCode()){
                     ToastUtils.showToastCenterShort(R.string.current_img_saveing_faile,MainActivity.this);
                 }
+                break;
+            case R.id.bt_share_img_multis:
+                if (mSaveBitmapState.getCode()==SaveBitmapState.SAVE_OK.getCode()){
+                    String[] strings = {App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH, App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH, App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH};
+                    SystemViewUtils.gotoSystemShare(mContext.get(),SystemViewUtils.GOTO_SHARE_TYPE_IMG_MULTIS,strings);
+                }else if (mSaveBitmapState.getCode()==SaveBitmapState.NOT_SAVE.getCode()){
+                    ToastUtils.showToastCenterShort(R.string.current_img_not_save,MainActivity.this);
+                }else if (mSaveBitmapState.getCode()==SaveBitmapState.SAVEING.getCode()){
+                    ToastUtils.showToastCenterShort(R.string.current_img_saving,MainActivity.this);
+                }else if (mSaveBitmapState.getCode()==SaveBitmapState.SAVE_FAILE.getCode()){
+                    ToastUtils.showToastCenterShort(R.string.current_img_saveing_faile,MainActivity.this);
+                }
+                break;
+            case R.id.bt_share_file_single:
+                if (mSaveBitmapState.getCode()==SaveBitmapState.SAVE_OK.getCode()){
+                    String[] strings = {App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH};
+                    SystemViewUtils.gotoSystemShare(mContext.get(),SystemViewUtils.GOTO_SHARE_TYPE_FILE_SINGLE,strings);
+                }else if (mSaveBitmapState.getCode()==SaveBitmapState.NOT_SAVE.getCode()){
+                    ToastUtils.showToastCenterShort(R.string.current_img_not_save,MainActivity.this);
+                }else if (mSaveBitmapState.getCode()==SaveBitmapState.SAVEING.getCode()){
+                    ToastUtils.showToastCenterShort(R.string.current_img_saving,MainActivity.this);
+                }else if (mSaveBitmapState.getCode()==SaveBitmapState.SAVE_FAILE.getCode()){
+                    ToastUtils.showToastCenterShort(R.string.current_img_saveing_faile,MainActivity.this);
+                }
+                break;
+            case R.id.bt_share_file_multis:
+                ToastUtils.showToastCenterShort("暂时没实现",mContext.get());
+//                if (mSaveBitmapState.getCode()==SaveBitmapState.SAVE_OK.getCode()){
+//                    String[] strings = {App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH, App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH, App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH};
+//                    SystemViewUtils.gotoSystemShare(mContext.get(),SystemViewUtils.GOTO_SHARE_TYPE_FILE_MULTIS,strings);
+//                }else if (mSaveBitmapState.getCode()==SaveBitmapState.NOT_SAVE.getCode()){
+//                    ToastUtils.showToastCenterShort(R.string.current_img_not_save,MainActivity.this);
+//                }else if (mSaveBitmapState.getCode()==SaveBitmapState.SAVEING.getCode()){
+//                    ToastUtils.showToastCenterShort(R.string.current_img_saving,MainActivity.this);
+//                }else if (mSaveBitmapState.getCode()==SaveBitmapState.SAVE_FAILE.getCode()){
+//                    ToastUtils.showToastCenterShort(R.string.current_img_saveing_faile,MainActivity.this);
+//                }
                 break;
         }
     }

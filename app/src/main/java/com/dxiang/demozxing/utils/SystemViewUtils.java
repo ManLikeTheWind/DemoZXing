@@ -8,16 +8,23 @@ import android.content.IntentSender;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.RequiresPermission;
 import android.support.v4.content.PermissionChecker;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.dxiang.demozxing.App;
 import com.dxiang.demozxing.R;
 import com.dxiang.demozxing.activity.CaptureActivity;
 import com.dxiang.demozxing.constants.Constants;
+
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * 作者：dongixang
@@ -27,9 +34,14 @@ import com.dxiang.demozxing.constants.Constants;
  */
 
 public class SystemViewUtils {
+    public static final String TAG=SystemViewUtils.class.getSimpleName();
 
-    private static Activity activity;
-    private static int requestCode;
+    public static final int GOTO_SHARE_TYPE_DEFAULT=-1;
+    public static final int GOTO_SHARE_TYPE_TEXT=0;
+    public static final int GOTO_SHARE_TYPE_IMG_SINGLE=1;
+    public static final int GOTO_SHARE_TYPE_IMG_MULTIS=2;
+    public static final int GOTO_SHARE_TYPE_FILE_SINGLE=3;
+    public static final int GOTO_SHARE_TYPE_FILE_MULTIS=4;
 
     public static void gotoCropSystemView(Uri inputRri, Activity avtivity, int requestCodp) {
         Intent intent = new Intent("com.android.camera.action.CROP");
@@ -44,13 +56,140 @@ public class SystemViewUtils {
         avtivity.startActivityForResult(intent, requestCodp);
     }
 
-    public static void gotoSystemShare(Uri imageFileUri, Activity activity){
+    /**
+     * @param shareType {@link #GOTO_SHARE_TYPE_DEFAULT}、{@link #GOTO_SHARE_TYPE_TEXT}、
+     *      {@link #GOTO_SHARE_TYPE_IMG_SINGLE}、{@link #GOTO_SHARE_TYPE_IMG_MULTIS}、
+     *      {@link #GOTO_SHARE_TYPE_FILE_SINGLE}、{@link #GOTO_SHARE_TYPE_FILE_MULTIS}、
+     * @param imageFileUri 不定长数组
+     */
+    public static void gotoSystemShare(Activity activity,int shareType,String...imageFileUri){
         Intent shareIntent = new Intent();
-        shareIntent.setAction(Intent.ACTION_SEND);
-        shareIntent.putExtra(Intent.EXTRA_STREAM, imageFileUri);
-        shareIntent.setType("image/*");
-//自定义提示语
-        activity.startActivity(Intent.createChooser(shareIntent, activity.getString(R.string.system_share_to)));
+        File shareFile ;
+        StringBuffer sbNoExist=null;
+        ArrayList<Uri> uriList;
+        switch (shareType){
+            case GOTO_SHARE_TYPE_IMG_SINGLE://单张图片:由文件得到uri
+                shareFile = new File(imageFileUri[0]);
+                sbNoExist=new StringBuffer();
+                if (shareFile!=null&&shareFile.exists()){
+                    Uri imageUri = Uri.fromFile(shareFile);
+                    Log.d("share", "uri:" + imageUri);  //输出：file:///storage/emulated/0/test.jpg
+                    shareIntent.setAction(Intent.ACTION_SEND);
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+                    shareIntent.setType("image/*");
+                }else {
+                    sbNoExist.append(imageFileUri[0]+";\n");
+                }
+                break;
+            case GOTO_SHARE_TYPE_IMG_MULTIS: //分享多张图片
+                uriList = new ArrayList<Uri>();
+                sbNoExist=new StringBuffer();
+                for (String abPath:imageFileUri) {
+                    shareFile = new File(abPath);
+                    if (shareFile!=null&&shareFile.exists()){
+                        uriList.add(Uri.fromFile(shareFile));
+                    }else {
+                        sbNoExist.append(abPath+";\n");
+                    }
+                }
+                if (uriList.size()!=0){
+                    shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+                    shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uriList);
+                    shareIntent.setType("image/*");
+                }
+            break;
+            case GOTO_SHARE_TYPE_FILE_SINGLE:
+                shareFile = new File(imageFileUri[0]);
+                sbNoExist=new StringBuffer();
+                if (shareFile!=null&&shareFile.exists()){
+                    shareIntent.setAction(Intent.ACTION_SEND);
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(shareFile));
+                    shareIntent.setType(getMimeType(shareFile.getAbsolutePath()));//此处可发送多种文件
+                    shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                }else {
+                    sbNoExist.append(imageFileUri[0]+";\n");
+                }
+                break;
+            case GOTO_SHARE_TYPE_FILE_MULTIS:
+                uriList = new ArrayList<Uri>();
+                sbNoExist=new StringBuffer();
+                for (String abPath:imageFileUri) {
+                    shareFile = new File(abPath);
+                    if (shareFile!=null&&shareFile.exists()){
+                        uriList.add(Uri.fromFile(shareFile));
+                    }else {
+                        sbNoExist.append(abPath+";\n");
+                    }
+                }
+                if (uriList.size()!=0){
+                    shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+                    shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uriList);
+                    shareIntent.setType("image/*");
+//                  shareIntent.setType(getMimeType(shareFile.getAbsolutePath()));//此处可发送多种文件
+//                  shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                  shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                }
+                break;
+            case GOTO_SHARE_TYPE_TEXT://文字
+            default:
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, imageFileUri[0]);
+                shareIntent.setType("text/plain");
+                break;
+        }
+        if (sbNoExist!=null&&sbNoExist.length()>0){
+            ToastUtils.showToastCenterShort(activity.getString(R.string.share_file_no_exist,sbNoExist.toString()),activity);
+            if (shareType==GOTO_SHARE_TYPE_IMG_SINGLE
+                    ||shareType==GOTO_SHARE_TYPE_FILE_SINGLE
+                    ||imageFileUri.length<=1){
+                return;
+            }
+        }
+        //设置分享列表的标题，并且每次都显示分享列表--6.x后，需要申请权限
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        shareIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        Intent wrapperIntent=createChooser(shareIntent, activity.getString(R.string.system_share_to),null);
+        activity.startActivity(wrapperIntent);
+
+    }
+
+    public static void gotoSystemBrowser(Uri content_url,Activity activity,int browserType){
+        try {
+            Intent intent;
+            switch (browserType){
+                case 1://其他浏览器，不建议使用这种，如果app没有安装会报android.content.ActivityNotFoundException指针:也可以通过packagemanager 检查系统有没有这个窗体；
+                    intent = new Intent();
+                    //Intent intent = new Intent(Intent.ACTION_VIEW,uri);
+                    intent.setAction("android.intent.action.VIEW");
+                    intent.setData(content_url);
+                    intent.setClassName("com.android.browser","com.android.browser.BrowserActivity");
+                    // uc浏览器"："com.uc.browser", "com.uc.browser.ActivityUpdate“
+                    //opera："com.opera.mini.android", "com.opera.mini.android.Browser"
+                    //qq浏览器："com.tencent.mtt", "com.tencent.mtt.MainActivity"
+                    activity.startActivity(intent);
+                    break;
+                default://
+                    intent = new Intent();
+                    //Intent intent = new Intent(Intent.ACTION_VIEW,uri);
+                    intent.setAction("android.intent.action.VIEW");
+                    intent.setData(content_url);
+                    activity.startActivity(intent);
+                    break;
+            }
+        }catch (Exception e){
+            Log.e(TAG, "gotoSystemBrowser: "+e.getMessage() );
+            gotoSystemShare(activity,GOTO_SHARE_TYPE_TEXT,content_url.getPath());
+        }
+
+    }
+
+    public static void gotoScanCodeForRessult(@RequiresPermission Activity activity, int requestCode){
+        boolean mIsReturnScanSuccessBitmap=true;
+        Intent intent=new Intent();
+        intent.setClass(activity, CaptureActivity.class);
+        intent.putExtra(Constants.ACTIVITY_REQUEST_DATA_SCAN_IS_RETURN_IMG,mIsReturnScanSuccessBitmap);
+        activity.startActivityForResult(intent,requestCode);
+        //overridePendingTransition();
     }
 
     public static  void  gotoPickImgFromAblum(Activity activity,int requestCode){
@@ -116,13 +255,25 @@ public class SystemViewUtils {
     }
 
 
-    public static void gotoScanCodeForRessult(@RequiresPermission Activity activity, int requestCode){
-        boolean mIsReturnScanSuccessBitmap=true;
-        Intent intent=new Intent();
-        intent.setClass(activity, CaptureActivity.class);
-        intent.putExtra(Constants.ACTIVITY_REQUEST_DATA_SCAN_IS_RETURN_IMG,mIsReturnScanSuccessBitmap);
-        activity.startActivityForResult(intent,requestCode);
-        //overridePendingTransition();
+    // 根据文件后缀名获得对应的MIME类型。
+    private static String getMimeType(String filePath) {
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        String mime = "*/*";
+        if (filePath != null) {
+            try {
+                mmr.setDataSource(filePath);
+                mime = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE);
+                Log.e(TAG, "getMimeType: mime = "+mime );
+            } catch (IllegalStateException e) {
+                return mime;
+            } catch (IllegalArgumentException e) {
+                return mime;
+            } catch (RuntimeException e) {
+                return mime;
+            }
+        }
+        return mime;
     }
+
 
 }
