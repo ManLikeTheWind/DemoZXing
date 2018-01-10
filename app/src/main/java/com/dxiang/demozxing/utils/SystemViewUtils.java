@@ -178,6 +178,7 @@ public class SystemViewUtils {
             }
         }catch (Exception e){
             Log.e(TAG, "gotoSystemBrowser: "+e.getMessage() );
+            ToastUtils.showToastCenterShort("打不开这个地址-地址没有格式化",activity);
             gotoSystemShare(activity,GOTO_SHARE_TYPE_TEXT,content_url.getPath());
         }
 
