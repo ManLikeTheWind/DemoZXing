@@ -48,5 +48,6 @@ public class Constants {
 
     public static final int ACTIVITY_PERMISSION_REQUEST_COMMON=500;
 
-
+    /** The Constant CHARACTER. */
+    public static final String CHARACTER = "UTF-8";
 }

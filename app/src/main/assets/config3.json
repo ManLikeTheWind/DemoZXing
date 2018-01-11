@@ -1,0 +1,15 @@
+[
+  {
+    "flavor": "base01",
+    "crashfile": true,
+    "reloadapp": true,
+    "logpath": "/zxing/logcash/"
+  }
+,
+  {
+    "flavor": "base02",
+    "crashfile": true,
+    "reloadapp": true,
+    "logpath": "/zxing/logcash/"
+  }
+]
