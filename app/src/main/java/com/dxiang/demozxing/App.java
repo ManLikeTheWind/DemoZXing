@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.support.multidex.MultiDex;
 import android.util.Log;
 
+import com.dxiang.demozxing.appconfig.UnCatchException;
+import com.dxiang.demozxing.utils.SystemPropertyUtil;
 import com.dxiang.demozxing.utils.systemdevice.ApkUtils;
 import com.tencent.bugly.crashreport.CrashReport;
 
@@ -28,10 +30,17 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         app=this;
+        SystemPropertyUtil.initSystemAssetGson(this);
         initData();
+        initBugLocal();
         initBugly();
         registerActivityLifeCallbasks();
 
+    }
+
+    private void  initBugLocal(){
+        UnCatchException catchExcep = new UnCatchException(this);
+        Thread.setDefaultUncaughtExceptionHandler(catchExcep);
     }
 
     /**

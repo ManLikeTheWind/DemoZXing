@@ -1,0 +1,4 @@
+1.application实现本地异常捕获，网络异常管理-bugly
+2.application实现分包Mullti-dex；
+3.gradle实现多app版本管理；
+4.实现版本升级-这个简单，咱不集成；

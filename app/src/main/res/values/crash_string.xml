@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- crash handler { -->
+    <string name="crash_version_info">当前应用程序版本：%s </string>
+    <string name="crash_mobile_info">手机设备信息：\n %s </string>
+    <string name="crash_error_info">崩溃日志：\n %s</string>
+    <string name="crash_unknow_version">版本号未知</string>
+    <string name="crash_app_exception_notification">APP error. Please restart the APP.</string>
+
+
+</resources>

@@ -5,6 +5,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
 
+import com.dxiang.demozxing.R;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -19,7 +21,6 @@ import java.io.IOException;
 public class ApkUtils {
     /**
      * 获取进程号对应的进程名
-     *
      * @param pid 进程号 android.os.Process.myPid()
      * @return 进程名
      */
@@ -46,23 +47,28 @@ public class ApkUtils {
         return null;
     }
 
-    /** 取得版本号*/
-    public static String getVersionName(Context context) {
+    /**
+     * 取得版本name，
+     *
+     * @return
+     */
+    public static String getVersionName(Context mContext) {
         try {
-            PackageInfo manager = context.getPackageManager().getPackageInfo(
-                    context.getPackageName(), 0);
-            return manager.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            return "Unknown";
+            PackageManager pm = mContext.getApplicationContext().getPackageManager();
+            PackageInfo info = pm.getPackageInfo(mContext.getApplicationContext().getPackageName(), 0);
+            return info.versionName;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return mContext.getApplicationContext().getString(R.string.crash_unknow_version);
         }
     }
 
-    /** 取得版本号*/
-    public static int getVersionCode(Context context) {
+    /** 取得版本code*/
+    public static int getVersionCode(Context mContext) {
         try {
-            PackageInfo manager = context.getPackageManager()
-                    .getPackageInfo(context.getPackageName(), 0);
-            return manager.versionCode;
+            PackageManager pm = mContext.getApplicationContext().getPackageManager();
+            PackageInfo info = pm.getPackageInfo(mContext.getApplicationContext().getPackageName(), 0);
+            return info.versionCode;
         } catch (PackageManager.NameNotFoundException e) {
             return -1;
         }

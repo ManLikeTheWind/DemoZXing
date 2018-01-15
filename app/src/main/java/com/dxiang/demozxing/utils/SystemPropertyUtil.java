@@ -84,7 +84,7 @@ public class SystemPropertyUtil {
                 try {
                     ConfigConstants.LOG_PATH = applicationContext.getExternalCacheDir().getAbsolutePath() + temp.getLogpath() + "/";
                 } catch (Exception e) {
-                    ConfigConstants.LOG_PATH = applicationContext.getCacheDir() + "/";
+                    ConfigConstants.LOG_PATH = applicationContext.getCacheDir() + "/"+ temp.getLogpath() + "/";
                     Log.e(TAG, "init Variable.FILE_PAH,LOG_PAHT error ： " + e.getMessage());
                 }
                 isequals = true;
@@ -92,7 +92,7 @@ public class SystemPropertyUtil {
             }
         }
         if (!isequals) {
-            String msg = "RCSAreaConfig.AREA error:" + ConfigConstants.FLAVOR;
+            String msg = "ConfigConstants.FLAVOR error:" + ConfigConstants.FLAVOR;
             throw new IllegalStateException(msg);
         }
     }

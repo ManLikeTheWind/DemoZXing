@@ -1,7 +1,10 @@
 package com.dxiang.demozxing.utils;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.ClipData;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -104,7 +107,7 @@ public class SystemViewUtils {
                 if (shareFile!=null&&shareFile.exists()){
                     shareIntent.setAction(Intent.ACTION_SEND);
                     shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(shareFile));
-                    shareIntent.setType(getMimeType(shareFile.getAbsolutePath()));//此处可发送多种文件
+                    shareIntent.setType(FileUtils.getMimeType(shareFile.getAbsolutePath()));//此处可发送多种文件
                     shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 }else {
                     sbNoExist.append(imageFileUri[0]+";\n");
@@ -255,26 +258,12 @@ public class SystemViewUtils {
         activity.finish();
     }
 
-
-    // 根据文件后缀名获得对应的MIME类型。
-    private static String getMimeType(String filePath) {
-        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        String mime = "*/*";
-        if (filePath != null) {
-            try {
-                mmr.setDataSource(filePath);
-                mime = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE);
-                Log.e(TAG, "getMimeType: mime = "+mime );
-            } catch (IllegalStateException e) {
-                return mime;
-            } catch (IllegalArgumentException e) {
-                return mime;
-            } catch (RuntimeException e) {
-                return mime;
-            }
-        }
-        return mime;
+    public static <T extends Activity> void  gotoAppMainActivity(Context mContext,Class<T> activityClass){
+        Intent intent = new Intent(mContext.getApplicationContext(),activityClass);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent restartIntent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager mgr = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 1000,restartIntent);
     }
-
 
 }
