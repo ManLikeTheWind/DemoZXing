@@ -1,13 +1,7 @@
 package com.dxiang.demozxing.appconfig;
 
-import android.app.AlarmManager;
 import android.app.Application;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Environment;
 import android.os.Looper;
 import android.util.Log;
@@ -16,7 +10,6 @@ import com.dxiang.demozxing.MainActivity;
 import com.dxiang.demozxing.R;
 import com.dxiang.demozxing.constants.ConfigConstants;
 import com.dxiang.demozxing.utils.FileUtils;
-import com.dxiang.demozxing.utils.SystemPropertyUtil;
 import com.dxiang.demozxing.utils.SystemViewUtils;
 import com.dxiang.demozxing.utils.ToastUtils;
 import com.dxiang.demozxing.utils.systemdevice.ApkUtils;
@@ -27,23 +20,18 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class UnCatchException implements UncaughtExceptionHandler {
 	private Thread.UncaughtExceptionHandler mDefaultHandler;
-	public static final String TAG = "CatchExcep";
-//	private BaseApp application;
+	public static final String TAG = "CatchException";
 	private Context mContext;
-//	ArrayList<Activity> list;
 
 	public UnCatchException(Application application) {
 		mDefaultHandler = Thread.getDefaultUncaughtExceptionHandler();
 		mContext = application.getApplicationContext();
-//		this.application = application;
-//		list = new ArrayList<Activity>();
 	}
 
 	@Override
@@ -52,15 +40,15 @@ public class UnCatchException implements UncaughtExceptionHandler {
 		String mobileInfo = PhoneUtils.getMobileInfo();
 		String errorinfo = getErrorInfo(ex);
 		Log.e("CrashHandler", "errorinfo-->" + errorinfo);
-		// 是发布版，并且还得运行输入错误日志到文件
-		if (ConfigConstants.CRASH_FILE) {
+
+		if (ConfigConstants.CRASH_FILE) {// 是发布版，得运行输入错误日志到文件
 			StringBuilder sb = new StringBuilder();
 			sb.append(mContext.getString(R.string.crash_version_info, versioninfo))
-					.append("\n")
-					.append(mContext
+			  .append("\n")
+			  .append(mContext
 							.getString(R.string.crash_mobile_info, mobileInfo))
-					.append("\n")
-					.append(mContext.getString(R.string.crash_error_info, errorinfo));
+			  .append("\n")
+			  .append(mContext.getString(R.string.crash_error_info, errorinfo));
 			saveCrashInfo2File(sb.toString());
 		}
 		if (!handleException(ex) && mDefaultHandler != null) {
@@ -98,11 +86,16 @@ public class UnCatchException implements UncaughtExceptionHandler {
 
 	/**获取错误的信*/
 	private String getErrorInfo(Throwable arg1) {
-		Writer writer = new StringWriter();
-		PrintWriter pw = new PrintWriter(writer);
-		arg1.printStackTrace(pw);
-		pw.close();
-		String error = writer.toString();
+		String error="";
+		try {
+			Writer writer = new StringWriter();
+			PrintWriter pw = new PrintWriter(writer);
+			arg1.printStackTrace(pw);
+			pw.close();
+			error = writer.toString();
+		}catch (Exception e){
+			Log.e(TAG, "getErrorInfo: e "+e );
+		}
 		return error;
 	}
 
