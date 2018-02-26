@@ -4,26 +4,20 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.ClipData;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.RequiresPermission;
 import android.support.v4.content.FileProvider;
-import android.support.v4.content.PermissionChecker;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.dxiang.demozxing.App;
 import com.dxiang.demozxing.R;
 import com.dxiang.demozxing.activity.CaptureActivity;
 import com.dxiang.demozxing.constants.Constants;
@@ -31,6 +25,7 @@ import com.dxiang.demozxing.constants.Constants;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 作者：dongixang
@@ -76,13 +71,24 @@ public class SystemViewUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (Build.VERSION.SDK_INT >= 24) {//将File对象转换为Uri对象，先进行系统版本的判定，Android7.0以后的版本和之前的版本不太一样
-            imageUri = FileProvider.getUriForFile(activity, "com.example.write.fileprovider", outputImage);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {//将File对象转换为Uri对象，先进行系统版本的判定，Android7.0以后的版本和之前的版本不太一样
+           //authorities  必须和清单文件写的一致:不然会报错：
+            // java.lang.NullPointerException: Attempt to invoke virtual method 'android.content.res.XmlResourceParser android.content.pm.PackageItemInfo.loadXmlMetaData(android.content.pm.PackageManager, java.lang.Stri-->
+            imageUri = FileProvider.getUriForFile(activity, "com.dxiang.demozxing.fileprovider", outputImage);
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            //将存储图片的uri读写权限授权给剪裁工具应用
+            List<ResolveInfo> resInfoList = activity.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+            for (ResolveInfo resolveInfo : resInfoList) {
+                String packageName = resolveInfo.activityInfo.packageName;
+                activity.grantUriPermission(packageName, imageUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }
         } else {
             imageUri =Uri.fromFile(outputImage);
         }
         intent.putExtra(MediaStore.EXTRA_OUTPUT,imageUri);
         intent.putExtra("outputFormat",Bitmap.CompressFormat.PNG.toString());
+
         activity.startActivityForResult(intent, requestCodp);
         return imageUri;
     }

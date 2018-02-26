@@ -9,8 +9,8 @@ android {
         applicationId "com.dxiang.demozxing"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 3
-        versionName "3.1.1"
+        versionCode 4
+        versionName "3.1.2"
         multiDexEnabled true//生成多个dex文件---3-1
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {

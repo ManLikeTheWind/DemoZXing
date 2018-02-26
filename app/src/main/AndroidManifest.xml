@@ -51,10 +51,14 @@
             <!--android:theme="@style/Theme.AppCompat.Light.NoActionBar"-->
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.dxiang.demozxing.write.fileprovider"
+            android:authorities="com.dxiang.demozxing.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
-            <meta-data
+            <!--
+            authorities：名称不能重复，不然在按装的时候，会报现在相同包名的的app； 在使用的时候尽量：包名+"."+fileprovider
+             exported：  false；不允许外部访问
+            -->
+         <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths"/>
         </provider>
