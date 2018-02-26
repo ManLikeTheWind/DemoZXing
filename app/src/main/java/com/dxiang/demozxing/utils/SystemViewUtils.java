@@ -16,7 +16,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.RequiresPermission;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.PermissionChecker;
 import android.util.Log;
 import android.widget.Toast;
@@ -27,6 +29,7 @@ import com.dxiang.demozxing.activity.CaptureActivity;
 import com.dxiang.demozxing.constants.Constants;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -46,7 +49,13 @@ public class SystemViewUtils {
     public static final int GOTO_SHARE_TYPE_FILE_SINGLE=3;
     public static final int GOTO_SHARE_TYPE_FILE_MULTIS=4;
 
-    public static void gotoCropSystemView(Uri inputRri, Activity avtivity, int requestCodp) {
+    /**
+     * @param inputRri
+     * @param activity
+     * @param requestCodp
+     * @param bitmapLocalCachePath 添加此处原由，如果剪裁的时候返回的图片过大，则会返回intent.data为空
+     */
+    public static Uri gotoCropSystemView(Uri inputRri, Activity activity, int requestCodp,String bitmapLocalCachePath) {
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(inputRri, "image/*");
         intent.putExtra("crop", "true");
@@ -54,9 +63,28 @@ public class SystemViewUtils {
         intent.putExtra("aspectY", 1);
         intent.putExtra("outputX", 150); // 图片输出大小
         intent.putExtra("outputY", 150); // 图片输出大小
-        intent.putExtra("noFaceDetection", true);
-        intent.putExtra("return-data", true);
-        avtivity.startActivityForResult(intent, requestCodp);
+        intent.putExtra("noFaceDetection", true);//脸部识别-不包含
+        intent.putExtra("scale", true);
+        intent.putExtra("return-data", false);
+        Uri imageUri=null;
+        File outputImage=new File(bitmapLocalCachePath);
+        if (outputImage.exists()) {
+           outputImage.delete();
+        }
+        try {
+            outputImage.createNewFile();////创建file文件，用于存储缓存的照片；若不创建则保存失败；
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (Build.VERSION.SDK_INT >= 24) {//将File对象转换为Uri对象，先进行系统版本的判定，Android7.0以后的版本和之前的版本不太一样
+            imageUri = FileProvider.getUriForFile(activity, "com.example.write.fileprovider", outputImage);
+        } else {
+            imageUri =Uri.fromFile(outputImage);
+        }
+        intent.putExtra(MediaStore.EXTRA_OUTPUT,imageUri);
+        intent.putExtra("outputFormat",Bitmap.CompressFormat.PNG.toString());
+        activity.startActivityForResult(intent, requestCodp);
+        return imageUri;
     }
 
     /**

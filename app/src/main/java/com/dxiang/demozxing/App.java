@@ -26,6 +26,7 @@ public class App extends Application {
     public static final String TAG=App.class.getSimpleName();
     public static App app;
     public static String M_CACHE_CODE_RESULT_BITMAP_FILE_PATH=null;
+    public static String M_CACHE_CODE_RESULT_BITMAP_FILE_PATH_SCAN_LOCAL=null;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -84,7 +85,10 @@ public class App extends Application {
         }else {
             M_CACHE_CODE_RESULT_BITMAP_FILE_PATH =getCacheDir().getAbsolutePath();
         }
+        M_CACHE_CODE_RESULT_BITMAP_FILE_PATH_SCAN_LOCAL=M_CACHE_CODE_RESULT_BITMAP_FILE_PATH;
         M_CACHE_CODE_RESULT_BITMAP_FILE_PATH += File.separator+"scan_code_bitmap_cache.png";
+        M_CACHE_CODE_RESULT_BITMAP_FILE_PATH_SCAN_LOCAL+=File.separator+"scan_local_code_bitmap_cache.png";
+
     }
 
     public static App get(){

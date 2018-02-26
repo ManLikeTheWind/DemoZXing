@@ -32,6 +32,7 @@ import com.dxiang.demozxing.utils.SystemViewUtils;
 import com.dxiang.demozxing.utils.ToastUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.ref.SoftReference;
 import java.util.Arrays;
 
@@ -250,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
-
+    private Uri gotoCropSystemViewImageResultCache;
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -258,14 +259,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case Constants.ACTIVITY_REQUEST_CODE_IMG:
                 if (resultCode==RESULT_OK){
                     Uri uri=data.getData();
-                    SystemViewUtils.gotoCropSystemView(uri,this,Constants.ACTIVITY_REQUEST_CODE_IMG_CROP_GENERATE_QR);
+                    gotoCropSystemViewImageResultCache=SystemViewUtils.gotoCropSystemView(uri,this,Constants.ACTIVITY_REQUEST_CODE_IMG_CROP_GENERATE_QR,App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH_SCAN_LOCAL);
                 }
                 break;
             case Constants.ACTIVITY_REQUEST_CODE_IMG_CROP_GENERATE_QR:
                 if (resultCode!=RESULT_OK&&data==null){
                     return;
                 }
-                Bitmap logoBitmap = (Bitmap) data.getParcelableExtra("data");
+//               Uri bitmapUri = data.getData();//为空；
+                 Bitmap logoBitmap =  null;//data.getParcelableExtra("data");
+                try {
+                    logoBitmap= BitmapFactory.decodeStream(getContentResolver().openInputStream(gotoCropSystemViewImageResultCache));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                if (logoBitmap!=null){
+                    Log.e(TAG, "图片大小：" + logoBitmap.getByteCount() + "；图片宽:"+ logoBitmap.getWidth() + "；图片高：" + logoBitmap.getHeight());
+                }
                 ThreadPool.get().execute(new RunnableCreateQRCode(
                         mHandler,
                         et_data.getText(),

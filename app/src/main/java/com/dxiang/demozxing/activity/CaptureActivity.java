@@ -3,6 +3,7 @@ package com.dxiang.demozxing.activity;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.media.AudioManager;
@@ -41,6 +42,7 @@ import com.dxiang.demozxing.view.ViewfinderView;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 
+import java.io.FileNotFoundException;
 import java.util.Locale;
 import java.util.Vector;
 
@@ -273,21 +275,29 @@ public class CaptureActivity extends AppCompatActivity implements
         super.onDestroy();
     }
 
+    private Uri gotoCropSystemViewImageResultCache=null;
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode){
             case Constants.ACTIVITY_REQUEST_CODE_IMG:
                 if (resultCode==RESULT_OK){
                     Uri uri=data.getData();
-                    SystemViewUtils.gotoCropSystemView(uri,this,Constants.ACTIVITY_REQUEST_CODE_GOTO_CROP_SCANNING);
+                    gotoCropSystemViewImageResultCache=SystemViewUtils.gotoCropSystemView(uri,this,Constants.ACTIVITY_REQUEST_CODE_GOTO_CROP_SCANNING,App.M_CACHE_CODE_RESULT_BITMAP_FILE_PATH_SCAN_LOCAL);
                 }
                 break;
             case Constants.ACTIVITY_REQUEST_CODE_GOTO_CROP_SCANNING:
                 if (resultCode==RESULT_OK){
-                    Bitmap bitmap=data.getParcelableExtra("data");
-                    Log.e(TAG, "图片大小：" + bitmap.getByteCount() + "；图片宽:"
-                            + bitmap.getWidth() + "；图片高：" + bitmap.getHeight());
-                    ThreadPool.get().execute(new RunnableParseImgCode(mSetResultHandler,bitmap));
+                    try {
+//                   Uri bitmapUri = data.getData();
+//                   Bitmap bitmap=data.getParcelableExtra("data");
+                     Bitmap bitmap= BitmapFactory.decodeStream(getContentResolver().openInputStream(gotoCropSystemViewImageResultCache));
+                     if (bitmap!=null){
+                        Log.e(TAG, "图片大小：" + bitmap.getByteCount() + "；图片宽:"+ bitmap.getWidth() + "；图片高：" + bitmap.getHeight());
+                     }
+                     ThreadPool.get().execute(new RunnableParseImgCode(mSetResultHandler,bitmap));
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
                 break;
         }
