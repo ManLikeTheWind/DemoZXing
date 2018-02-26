@@ -77,6 +77,7 @@ public class SystemViewUtils {
             imageUri = FileProvider.getUriForFile(activity, "com.dxiang.demozxing.fileprovider", outputImage);
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
             //将存储图片的uri读写权限授权给剪裁工具应用
             List<ResolveInfo> resInfoList = activity.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
             for (ResolveInfo resolveInfo : resInfoList) {
