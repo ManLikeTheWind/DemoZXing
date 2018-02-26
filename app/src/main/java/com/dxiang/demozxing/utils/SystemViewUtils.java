@@ -61,6 +61,7 @@ public class SystemViewUtils {
         intent.putExtra("noFaceDetection", true);//脸部识别-不包含
         intent.putExtra("scale", true);
         intent.putExtra("return-data", false);
+
         Uri imageUri=null;
         File outputImage=new File(bitmapLocalCachePath);
         if (outputImage.exists()) {
@@ -90,7 +91,8 @@ public class SystemViewUtils {
         intent.putExtra(MediaStore.EXTRA_OUTPUT,imageUri);
         intent.putExtra("outputFormat",Bitmap.CompressFormat.PNG.toString());
 
-        activity.startActivityForResult(intent, requestCodp);
+        //有些手机可能剪裁后的resultCode总是为RESULT_CANCEL，所以建议将使用该功能Activity的launchMode设置为singleTask:如本例子的CaptureActivity，和MainActivity；
+        activity.startActivityForResult(createChooser(intent, activity.getString(R.string.chose_crop_tools),null), requestCodp);
         return imageUri;
     }
 

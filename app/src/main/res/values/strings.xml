@@ -15,6 +15,7 @@
 
     <string name="parse_code_error">解析错误</string>
     <string name="chose_scan_img">选择要扫描的图片</string>
+    <string name="chose_crop_tools">选择剪裁工具</string>
 
     <string name="current_img_not_save">当前图片没有保存，请先手动保存图片</string>
     <string name="current_img_saving">当前图片正在保存...</string>
