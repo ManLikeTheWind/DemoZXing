@@ -1,0 +1,7 @@
+一、这个zxing 包含注释；
+二、我将里面的代码拷贝到module里面了---为了功能需要：
+1.扫描自动缩放摄像头；
+    主要添加代码com.google.zxing.qrcode.QRCodeReader.scaleCameraZoom()这个方法的调用；
+三、现在留着这个原版的意思是，作个备份；
+
+

@@ -33,8 +33,11 @@ import com.google.zxing.DecodeHintType;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
+import com.google.zxing.ResultPoint;
 import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeReader;
 
+import java.util.Arrays;
 import java.util.Hashtable;
 
 final class DecodeHandler extends Handler {
@@ -102,8 +105,8 @@ final class DecodeHandler extends Handler {
       message.sendToTarget();
     }
 
-
   }
+
 
 
 }

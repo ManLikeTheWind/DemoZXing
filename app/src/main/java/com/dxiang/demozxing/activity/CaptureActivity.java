@@ -124,6 +124,7 @@ public class CaptureActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan_qrcode);
         CameraManager.init(getApplication());
+        CameraManager.get().setCaptureActivity(this);
         initIntent();
         initView();
         initData();

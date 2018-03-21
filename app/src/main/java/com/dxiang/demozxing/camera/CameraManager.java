@@ -26,10 +26,10 @@ import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.os.Build;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
+import com.dxiang.demozxing.activity.CaptureActivity;
 import com.dxiang.demozxing.utils.DisplayUtils;
 
 /**
@@ -48,6 +48,7 @@ public final class CameraManager {
 	private static  int MAX_FRAME_HEIGHT = 260;//此处是每个边的长度
 
 	private static CameraManager cameraManager;
+	private CaptureActivity captureActivity;
 
 	static final int SDK_INT; // Later we can use Build.VERSION.SDK_INT
 	static {
@@ -91,6 +92,12 @@ public final class CameraManager {
 		if (cameraManager == null) {
 			cameraManager = new CameraManager(context);
 		}
+	}
+	public CaptureActivity getCaptureActivity(){
+		return captureActivity;
+	}
+	public void setCaptureActivity(CaptureActivity captureActivity){
+		this.captureActivity=captureActivity;
 	}
 
 	/**
@@ -162,6 +169,9 @@ public final class CameraManager {
 			// }
 			FlashlightManager.enableFlashlight();
 		}
+	}
+	public Camera getCamera() {
+		return camera;
 	}
 
 	/**Closes the camera driver if still in use.*/
